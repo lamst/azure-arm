@@ -1,0 +1,17 @@
+# 1. Create resource group
+resource_group_name='temp-rg'
+resource_group_exist=$(az group exists -n $resource_group_name)
+if [ $(az group exists -n $resource_group_name) = false ]; then
+    echo "Creating resource group"
+    az group create -n $resource_group_name -l southeastasia
+fi
+
+# 2. Setup parameters
+template_name="CreateVMTemplate.json"
+parameter_name="Parameters.json"
+
+echo "Validating deployment"
+az group deployment validate -g $resource_group_name --template-file $template_name --parameters "@$parameter_name"
+
+echo "Create resources"
+az group deployment create -g $resource_group_name --template-file $template_name --parameters "@$parameter_name"
