@@ -13,7 +13,7 @@
     "resources": [],
     "outputs": {
         "availabilitySetRef": {
-            "value": "[concat(resourceId(resourceGroup().name, 'Microsoft.Compute/availabilitySets/'), parameters('availabilitySetName'))]",
+            "value": "[resourceId(resourceGroup().name, 'Microsoft.Compute/availabilitySets/', parameters('availabilitySetName'))]",
             "type": "string"
         }
     }
