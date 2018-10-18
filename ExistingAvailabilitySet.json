@@ -1,0 +1,20 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "availabilitySetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the availability set."
+            }
+        }
+    },
+    "variables": {},
+    "resources": [],
+    "outputs": {
+        "availabilitySetRef": {
+            "value": "[concat(resourceId(resourceGroup().name, 'Microsoft.Compute/availabilitySets/'), parameters('availabilitySetName'))]",
+            "type": "string"
+        }
+    }
+}
