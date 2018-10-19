@@ -12,19 +12,22 @@
             "value": 64
         },
         "vmName": {
-            "value": "temp-vm2"
+            "value": "temp-vm1"
         },
         "newOrExistingVnet": {
             "value": "Existing"
         },
         "newOrExistingVnetName": {
-            "value": "temp-vnet"
+            "value": "mcw-vnet"
         },
         "newOrExistingSubnetName": {
             "value": "temp-snet"
         },
+        "existingVnetResourceGroupName": {
+            "value": "mcw-rg"
+        },
         "newOrExistingAvailabilitySet": {
-            "value": "Existing"
+            "value": "New"
         },
         "newOrExistingAvailabilitySetName": {
             "value": "temp-as"

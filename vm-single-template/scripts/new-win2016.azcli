@@ -7,8 +7,8 @@ if [ $(az group exists -n $resource_group_name) = false ]; then
 fi
 
 # 2. Setup parameters
-template_name="CreateVMTemplate.json"
-parameter_name="Parameters.json"
+template_name="azuredeploy.json"
+parameter_name="azuredeploy.parameters.json"
 
 echo "Validating deployment"
 az group deployment validate -g $resource_group_name --template-file $template_name --parameters "@$parameter_name"

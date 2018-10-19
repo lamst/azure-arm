@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "fromDiskName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the disk to take a snapshot from."
+            }
+        },
+        "diskResourceGroupName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "The name of the resource group the disk was deployed to."
+            }
+        },
+        "toDiskName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the disk to create."
+            }
+        }
+    },
+    "variables": {
+        "snapshotName": "[concat(parameters('fromDiskName'), '-ss')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Compute/snapshots",
+            "apiVersion": "2018-06-01",
+            "name": "[variables('snapshotName')]",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "creationData":{
+                    "createOption": "Copy",
+                    "sourceResourceId": "[resourceId(parameters('diskResourceGroupName'), 'Microsoft.Compute/disks/', parameters('fromDiskName'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/disks",
+            "apiVersion": "2018-06-01",
+            "name": "[parameters('toDiskName')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/snapshots/', variables('snapshotName'))]"
+            ],
+            "properties": {
+                "creationData":{
+                    "createOption": "Copy",
+                    "sourceResourceId": "[resourceId('Microsoft.Compute/snapshots/', variables('snapshotName'))]"
+                }
+            }
+        }
+    ]
+}

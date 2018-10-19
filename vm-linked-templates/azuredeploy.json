@@ -88,7 +88,7 @@
         }
     },
     "variables": {
-        "templateBaseUrl": "https://raw.githubusercontent.com/lamst/azure-vm-linked-templates/master/"
+        "templateBaseUrl": "https://raw.githubusercontent.com/lamst/azure-arm/master/"
     },
     "resources": [{
             "apiVersion": "2015-01-01",
@@ -98,7 +98,7 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
-                    "uri": "[concat(variables('templateBaseUrl'), parameters('newOrExistingVnet'), 'Vnet.json')]"
+                    "uri": "[concat(variables('templateBaseUrl'), 'vnet-template/', parameters('newOrExistingVnet'), '-vnet.json')]"
                 },
                 "parameters": {
                     "virtualNetworkName": {
@@ -121,7 +121,7 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
-                    "uri": "[concat(variables('templateBaseUrl'), parameters('newOrExistingAvailabilitySet'), 'AvailabilitySet.json')]"
+                    "uri": "[concat(variables('templateBaseUrl'), 'as-template/', parameters('newOrExistingAvailabilitySet'), '-as.json')]"
                 },
                 "parameters": {
                     "availabilitySetName": {
