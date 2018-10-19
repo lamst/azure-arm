@@ -6,13 +6,16 @@
             "value": "lamst"
         },
         "adminPassword": {
-            "value": "Azure12345678"
+            "value": "Azure87654321"
         },
         "vmName": {
-            "value": "temp-vm1"
+            "value": "temp-vm3"
+        },
+        "imageName": {
+            "value": "win2016-lamst"
         },
         "newOrExistingVnet": {
-            "value": "New"
+            "value": "Existing"
         },
         "newOrExistingVnetName": {
             "value": "temp-vnet"
@@ -20,8 +23,11 @@
         "newOrExistingSubnetName": {
             "value": "temp-snet"
         },
+        "existingVnetResourceGroupName": {
+            "value": "temp-rg"
+        },
         "newOrExistingAvailabilitySet": {
-            "value": "New"
+            "value": "Existing"
         },
         "newOrExistingAvailabilitySetName": {
             "value": "temp-as"

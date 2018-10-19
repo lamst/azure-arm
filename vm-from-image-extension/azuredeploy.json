@@ -27,6 +27,19 @@
                 "description": "The size of the VM."
             }
         },
+        "imageName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the image the virtual machine to base on."
+            }
+        },
+        "imageResourceGroup": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+                "description": "The name of the resource group containing the image the virtual machine to base on."
+            }
+        },
         "newOrExistingVnet": {
             "allowedValues": [
                 "New",
@@ -82,7 +95,10 @@
         }
     },
     "variables": {
-        "templateBaseUrl": "https://raw.githubusercontent.com/lamst/azure-arm/master/"
+        "templateBaseUrl": "https://raw.githubusercontent.com/lamst/azure-arm/master/",
+        "extensionScriptName": "prep-vm.ps1",
+        "extensionUri": "[concat(variables('templateBaseUrl'), 'vm-from-image/scripts/', variables('extensionScriptName'))]",
+        "imageId": "[resourceId(parameters('imageResourceGroup'), 'Microsoft.Compute/images/', parameters('imageName'))]"
     },
     "resources": [{
             "apiVersion": "2015-01-01",
@@ -163,11 +179,8 @@
                     "adminPassword": "[parameters('adminPassword')]"
                 },
                 "storageProfile": {
-                    "imageReference": {
-                        "publisher": "MicrosoftWindowsServer",
-                        "offer": "WindowsServer",
-                        "sku": "2016-Datacenter",
-                        "version": "latest"
+                    "imageReference":{
+                        "id": "[variables('imageId')]"
                     },
                     "osDisk": {
                         "name": "[concat(parameters('vmName'), '-osdisk')]",
@@ -182,6 +195,29 @@
                 },
                 "availabilitySet": {
                     "id": "[reference('as-template').outputs.availabilitySetRef.value]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2018-06-01",
+            "name": "update-sysprep-ext",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
+            ],
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": "true",
+                "settings": {
+                    "fileUris": [
+                        "[variables('extensionUri')]"
+                    ]
+                },
+                "protectedSettings": {
+                    "commandToExecute": "[concat('./', variables('extensionScriptName'))]"
                 }
             }
         }

@@ -165,8 +165,7 @@
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces/', concat(parameters('vmName'), '-nic1009'))]",
-                "[resourceId('Microsoft.Resources/deployments/', 'as-template')]",
-                "[variables('imageId')]"
+                "[resourceId('Microsoft.Resources/deployments/', 'as-template')]"
             ],
             "properties": {
                 "hardwareProfile": {

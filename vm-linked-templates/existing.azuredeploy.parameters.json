@@ -8,9 +8,6 @@
         "adminPassword": {
             "value": "Azure12345678"
         },
-        "dataDiskSizeGB": {
-            "value": 64
-        },
         "vmName": {
             "value": "temp-vm1"
         },
