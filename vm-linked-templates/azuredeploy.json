@@ -98,7 +98,7 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
-                    "uri": "[concat(variables('templateBaseUrl'), 'vnet-template/', parameters('newOrExistingVnet'), '-vnet.json')]"
+                    "uri": "[concat(variables('templateBaseUrl'), 'vnet-template/', toLower(parameters('newOrExistingVnet')), '-vnet.json')]"
                 },
                 "parameters": {
                     "virtualNetworkName": {
@@ -121,7 +121,7 @@
                 "mode": "Incremental",
                 "templateLink": {
                     "contentVersion": "1.0.0.0",
-                    "uri": "[concat(variables('templateBaseUrl'), 'as-template/', parameters('newOrExistingAvailabilitySet'), '-as.json')]"
+                    "uri": "[concat(variables('templateBaseUrl'), 'as-template/', toLower(parameters('newOrExistingAvailabilitySet')), '-as.json')]"
                 },
                 "parameters": {
                     "availabilitySetName": {
