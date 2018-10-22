@@ -4,5 +4,5 @@ Install-Module PSWindowsUpdate -Confirm:$false -Force:$true -SkipPublisherCheck:
 Get-WUInstall –MicrosoftUpdate –AcceptAll -IgnoreReboot -Confirm:$false
 
 # Generalize the VM
-# $sysprepPath = $env:windir + '\System32\Sysprep\sysprep.exe'
-# Start-Process -FilePath $sysprepPath -ArgumentList ("/oobe /shutdown /generalize /quiet")
+$sysprepPath = $env:windir + '\System32\Sysprep\sysprep.exe'
+Start-Process -FilePath $sysprepPath -ArgumentList ("/oobe /shutdown /generalize /quiet")
