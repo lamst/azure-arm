@@ -1,0 +1,21 @@
+while getopts n:g: option
+do
+case "${option}"
+in
+n) vm_name=${OPTARG};;
+g) resource_group_name=${OPTARG};;
+esac
+done
+
+if [ -z "$resource_group_name" ] || [ -z $vm_name ]; then
+    echo "az-vm-delete: error: (resource group | vm name) are required"
+    exit 1
+fi
+
+# Delete resources
+echo 'Deleting VM...'
+az vm delete -n $vm_name -g $resource_group_name -y
+echo 'Deleting network interface...'
+az network nic delete -n "$vm_name-nic1009" -g $resource_group_name
+echo 'Deleting disk...'
+az disk delete -n "$vm_name-osdisk" -g $resource_group_name -y

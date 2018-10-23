@@ -12,7 +12,7 @@
             "value": "temp-vm2"
         },
         "imageName": {
-            "value": "win2016-lamst"
+            "value": "win2016-pswu-1728"
         },
         "newOrExistingVnet": {
             "value": "Existing"

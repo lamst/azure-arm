@@ -179,7 +179,7 @@
                     "adminPassword": "[parameters('adminPassword')]"
                 },
                 "storageProfile": {
-                    "imageReference":{
+                    "imageReference": {
                         "id": "[variables('imageId')]"
                     },
                     "osDisk": {
@@ -201,7 +201,7 @@
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
             "apiVersion": "2018-06-01",
-            "name": "update-sysprep-ext",
+            "name": "[concat(parameters('vmName'), '/update-sysprep-ext')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
@@ -209,7 +209,7 @@
             "properties": {
                 "publisher": "Microsoft.Azure.Extensions",
                 "type": "CustomScript",
-                "typeHandlerVersion": "2.0",
+                "typeHandlerVersion": "1.9",
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
                     "fileUris": [
@@ -217,7 +217,7 @@
                     ]
                 },
                 "protectedSettings": {
-                    "commandToExecute": "[concat('./', variables('extensionScriptName'))]"
+                    "commandToExecute": "[variables('extensionScriptName')]"
                 }
             }
         }

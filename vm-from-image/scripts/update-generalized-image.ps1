@@ -2,7 +2,7 @@
 Param(
     # The name of the image
     [Parameter(Mandatory=$true)]
-    [string] $ImageName,
+    [string] $NewImageName,
     
     # The name of the virtual machine to create the image from
     [Parameter(Mandatory=$true)]
@@ -17,15 +17,20 @@ Param(
     [string] $Location = 'Southeast Asia'
 )
 
-$Location = 'Southeast Asia'
+$TemplateName = "azuredeploy.json"
+$ParameterName = "azuredeploy.parameters.json"
 $ExtensionName = 'sysprep-ext'
 $ScriptUri = 'https://raw.githubusercontent.com/lamst/azure-arm/master/vm-from-image/scripts/prep-vm.ps1'
 
-# Retrieve the VM to run SysPrep
-Write-Host 'Retrieving VM...'
+# Deploy VM from a previous image
+Write-Host "Deploying resources..."
+New-AzureRmResourceGroupDeployment -ResourceGroupName $ResourceGroupName -Name "image-vm-deploy" -TemplateFile ("..\" + $TemplateName) -TemplateParameterFile ("..\" + $ParameterName)
+
+# Retrieve reference to the VM deployed
+Write-Host "Retrieving VM..."
 $vm = Get-AzureRmVm -ResourceGroupName $ResourceGroupName -Name $VmName -ErrorAction SilentlyContinue
 if ($null -eq $vm) {
-    Write-Host "The VM does not exist."
+    Write-Host "The virtual machine does not exist."
     exit 1
 }
 
@@ -62,12 +67,11 @@ if ($output) {
 $vmStatus = Get-AzureRmVm -ResourceGroupName $ResourceGroupName -Name $VmName -Status
 $powerState = $vmStatus.Statuses[1].Code.Split('/')[1]
 while ($powerState -ne 'stopped') {
-    Write-Host 'Waiting for VM to be stopped...'
+    Write-Host 'Stopping VM...'
     Start-Sleep 10
     $vmStatus = Get-AzureRmVm -ResourceGroupName $ResourceGroupName -Name $VmName -Status
     $powerState = $vmStatus.Statuses[1].Code.Split('/')[1]
 }
-Write-Host 'VM is Stopped.'
 
 # Deallocate the VM
 Write-Host 'Deallocating VM...'
@@ -79,8 +83,8 @@ Set-AzureRmVM -ResourceGroupName $ResourceGroupName -Name $VmName -Generalized
 # Create a generalized image from the VM
 Write-Host 'Creating generalized image...'
 $vm = Get-AzureRmVM -Name $VmName -ResourceGroupName $ResourceGroupName
-$imageConfig = New-AzureRmImageConfig -Location $Location -SourceVirtualMachineId $vm.Id
-$image = New-AzureRmImage -Image $imageConfig -ImageName $ImageName -ResourceGroupName $ResourceGroupName
+$imageConfig = New-AzureRmImageConfig -Location $location -SourceVirtualMachineId $vm.Id
+$image = New-AzureRmImage -Image $imageConfig -ImageName $NewImageName -ResourceGroupName $ResourceGroupName
 
 Write-Host "-------------------------"
 Write-Host "Resource Id: " + $image.Id
