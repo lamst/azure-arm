@@ -13,7 +13,6 @@ Param(
     [string] $ResourceGroupName,
 
     # The location to store the custom image
-    [Parameter(Mandatory=$true)]
     [string] $Location = 'Southeast Asia'
 )
 
@@ -27,6 +26,11 @@ $vm = Get-AzureRmVm -ResourceGroupName $ResourceGroupName -Name $VmName -ErrorAc
 if ($null -eq $vm) {
     Write-Host "The VM does not exist."
     exit 1
+}
+
+# Infer location of the image from the virtual machine
+if ([string]::IsNullOrEmpty($Location)) {
+    $Location = $vm.Location
 }
 
 # Run custom script on VM

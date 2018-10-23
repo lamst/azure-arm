@@ -13,7 +13,6 @@ Param(
     [string] $ResourceGroupName,
 
     # The location to store the custom image
-    [Parameter(Mandatory=$true)]
     [string] $Location = 'Southeast Asia'
 )
 
@@ -32,6 +31,11 @@ $vm = Get-AzureRmVm -ResourceGroupName $ResourceGroupName -Name $VmName -ErrorAc
 if ($null -eq $vm) {
     Write-Host "The virtual machine does not exist."
     exit 1
+}
+
+# Infer location of the image from the virtual machine
+if ([string]::IsNullOrEmpty($Location)) {
+    $Location = $vm.Location
 }
 
 # Run custom script on VM
@@ -88,3 +92,11 @@ $image = New-AzureRmImage -Image $imageConfig -ImageName $NewImageName -Resource
 
 Write-Host "-------------------------"
 Write-Host "Resource Id: " + $image.Id
+
+# Cleanup resources
+Write-Host 'Removing VM...'
+Remove-AzureRmVm -Name $VmName -ResourceGroupName $ResourceGroupName -Confirm:$false
+Write-Host 'Removing network interface...'
+Remove-AzureRmNetworkInterface -Name ($VmName + "-nic1009") -ResourceGroupName $ResourceGroupName -Confirm:$false
+Write-Host 'Removing disk...'
+Remove-AzureRmDisk -DiskName ($VmName + "-osdisk") -ResourceGroupName $ResourceGroupName -Confirm:$false
