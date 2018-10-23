@@ -95,8 +95,8 @@ Write-Host "Resource Id: " + $image.Id
 
 # Cleanup resources
 Write-Host 'Removing VM...'
-Remove-AzureRmVm -Name $VmName -ResourceGroupName $ResourceGroupName -Confirm:$false
+Remove-AzureRmVm -Name $VmName -ResourceGroupName $ResourceGroupName -Confirm:$false -Force:$true
 Write-Host 'Removing network interface...'
-Remove-AzureRmNetworkInterface -Name ($VmName + "-nic1009") -ResourceGroupName $ResourceGroupName -Confirm:$false
+Remove-AzureRmNetworkInterface -Name ($VmName + "-nic1009") -ResourceGroupName $ResourceGroupName -Confirm:$false -Force:$true
 Write-Host 'Removing disk...'
-Remove-AzureRmDisk -DiskName ($VmName + "-osdisk") -ResourceGroupName $ResourceGroupName -Confirm:$false
+Remove-AzureRmDisk -DiskName ($VmName + "-osdisk") -ResourceGroupName $ResourceGroupName -Confirm:$false -Force:$true
