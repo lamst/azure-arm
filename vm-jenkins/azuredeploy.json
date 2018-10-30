@@ -83,7 +83,7 @@
     },
     "variables": {
         "templateBaseUrl": "https://raw.githubusercontent.com/lamst/azure-arm/master/",
-        "extensionScriptName": "configure-jenkins",
+        "extensionScriptName": "config-jenkins.sh",
         "extensionUri": "[concat(variables('templateBaseUrl'), 'vm-jenkins/scripts/', variables('extensionScriptName'))]"
     },
     "resources": [{

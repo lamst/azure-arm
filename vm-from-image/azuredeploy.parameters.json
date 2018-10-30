@@ -9,10 +9,10 @@
             "value": "Azure87654321"
         },
         "vmName": {
-            "value": "temp-vm2"
+            "value": "temp-vm3"
         },
         "imageName": {
-            "value": "win2016-pswu-1728"
+            "value": "win2016-pswu-1745"
         },
         "newOrExistingVnet": {
             "value": "Existing"

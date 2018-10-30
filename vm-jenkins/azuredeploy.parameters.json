@@ -9,25 +9,25 @@
             "value": "Azure87654321"
         },
         "vmName": {
-            "value": "temp-vm3"
+            "value": "mcw-jenkins1"
         },
         "newOrExistingVnet": {
             "value": "Existing"
         },
         "newOrExistingVnetName": {
-            "value": "temp-vnet"
+            "value": "mcw-vnet"
         },
         "newOrExistingSubnetName": {
-            "value": "temp-snet"
+            "value": "mcw-snet"
         },
         "existingVnetResourceGroupName": {
-            "value": "temp-rg"
+            "value": "mcw-rg"
         },
         "newOrExistingAvailabilitySet": {
             "value": "Existing"
         },
         "newOrExistingAvailabilitySetName": {
-            "value": "temp-as"
+            "value": "devops-jenkins-as"
         }
     }
 }
