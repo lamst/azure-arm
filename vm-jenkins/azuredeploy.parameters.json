@@ -11,9 +11,6 @@
         "vmName": {
             "value": "temp-vm3"
         },
-        "imageName": {
-            "value": "win2016-lamst"
-        },
         "newOrExistingVnet": {
             "value": "Existing"
         },
