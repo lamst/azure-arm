@@ -2,10 +2,13 @@
 
 # Perform upgrades
 sudo apt-get update
-sudo apt-get upgrade
+sudo apt-get upgrade -y
+
+# Install Java 8
+sudo apt-get install openjdk-8-jdk -y
 
 # Jenkins
-wget -q -O - https://pkg.jenkins.io/debian/jenkins-ci.org.key | sudo apt-key add -
+wget -q -O - https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
 sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
 sudo apt-get update
 sudo apt-get install jenkins -y
@@ -23,39 +26,29 @@ sudo curl -L https://github.com/docker/compose/releases/download/1.20.0-rc1/dock
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Azure CLI
-echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ wheezy main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
-sudo apt-key adv --keyserver packages.microsoft.com --recv-keys 417A0893
-sudo apt-get install apt-transport-https
-sudo apt-get update && sudo apt-get install azure-cli
+AZ_REPO=$(lsb_release -cs)
+echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | sudo tee /etc/apt/sources.list.d/azure-cli.list
+curl -L https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+sudo apt-get install apt-transport-https -y
+sudo apt-get update && sudo apt-get install azure-cli -y
 
 # Kubectl
-cd /tmp/
+# cd /tmp/
 sudo curl -kLO https://storage.googleapis.com/kubernetes-release/release/v1.8.0/bin/linux/amd64/kubectl
-chmod +x ./kubectl
+sudo chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 
-# .NET Core 1.1.2
-sudo sh -c 'echo "deb [arch=amd64] https://apt-mo.trafficmanager.net/repos/dotnet-release/ xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 417A0893
-sudo apt-get update
-sudo apt-get install dotnet-dev-1.0.4
-
-# .NET Core 1.1.7
+# .NET Core 1.0.4, 1.1.7, and 2.1.4
 curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
 sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
 sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
 sudo apt-get update
-sudo apt-get install dotnet-dev-1.1.7
-
-# .NET Core 2.1.4
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg
-sudo mv microsoft.gpg /etc/apt/trusted.gpg.d/microsoft.gpg
-sudo sh -c 'echo "deb [arch=amd64] https://packages.microsoft.com/repos/microsoft-ubuntu-xenial-prod xenial main" > /etc/apt/sources.list.d/dotnetdev.list'
-sudo apt-get update
-sudo apt-get install dotnet-sdk-2.1.4
+sudo apt-get install dotnet-dev-1.0.4 -y
+sudo apt-get install dotnet-dev-1.1.7 -y
+sudo apt-get install dotnet-sdk-2.1.4 -y
 
 # Configure access
-usermod -aG docker jenkins
-usermod -aG docker azureuser
+sudo usermod -aG docker jenkins
+sudo usermod -aG docker azureuser
 sudo touch /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
-service jenkins restart
+sudo service jenkins restart
