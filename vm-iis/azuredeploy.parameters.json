@@ -6,10 +6,10 @@
             "value": "lamst"
         },
         "adminPassword": {
-            "value": "Azure87654321"
+            "value": "Azure12345678"
         },
         "vmName": {
-            "value": "mcw-jenkins2"
+            "value": "temp-vm1"
         },
         "newOrExistingVnet": {
             "value": "Existing"
@@ -18,16 +18,16 @@
             "value": "mcw-vnet"
         },
         "newOrExistingSubnetName": {
-            "value": "mcw-snet"
+            "value": "temp-snet"
         },
         "existingVnetResourceGroupName": {
             "value": "mcw-rg"
         },
         "newOrExistingAvailabilitySet": {
-            "value": "New"
+            "value": "Existing"
         },
         "newOrExistingAvailabilitySetName": {
-            "value": "devops-jenkins-as"
+            "value": "temp-as"
         }
     }
 }
