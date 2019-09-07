@@ -90,28 +90,11 @@
         }
     },
     "variables": {
-        "loadBalancerFrontEnd": "lb-fe",
-        "loadBalancerBackEnd": "lb-be",
-        "inboundRdpNat": "inbound-rdp-nat",
-        "adNicName": "[concat(parameters('vmName'), '-nic', substring(uniqueString(resourceGroup().id), 0, 6))]",
+        "adNicName": "[concat(parameters('vmName'), '-nic-', substring(uniqueString(resourceGroup().id), 0, 6))]",
         "adNicIPAddress": "10.0.0.4",
-        "publicIPAddressName": "ad-pip",
-        "adAvailabilitySetName": "ad-as",
-        "loadBalancerName": "ad-lb"
+        "adAvailabilitySetName": "ad-as"
     },
     "resources": [
-        {
-            "type": "Microsoft.Network/publicIPAddresses",
-            "apiVersion": "2019-02-01",
-            "name": "[variables('publicIPAddressName')]",
-            "location": "[parameters('location')]",
-            "properties": {
-                "publicIPAllocationMethod": "Static",
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('dnsPrefix')]"
-                }
-            }
-        },
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-01",
@@ -141,7 +124,7 @@
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-01",
-            "name": "VNet",
+            "name": "vnet",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -168,53 +151,12 @@
             }
         },
         {
-            "type": "Microsoft.Network/loadBalancers",
-            "apiVersion": "2019-04-01",
-            "name": "[variables('loadBalancerName')]",
-            "location": "[parameters('location')]",
-            "dependsOn": [
-                "[variables('publicIPAddressName')]"
-            ],
-            "properties": {
-                "frontendIPConfigurations": [
-                    {
-                        "name": "[variables('loadBalancerFrontEnd')]",
-                        "properties": {
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
-                            }
-                        }
-                    }
-                ],
-                "backendAddressPools": [
-                    {
-                        "name": "[variables('loadBalancerBackEnd')]"
-                    }
-                ],
-                "inboundNatRules": [
-                    {
-                        "name": "[variables('inboundRdpNat')]",
-                        "properties": {
-                            "frontendIPConfiguration": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', variables('loadBalancerName'), variables('loadBalancerFrontEnd'))]"
-                            },
-                            "protocol": "Tcp",
-                            "frontendPort": 3389,
-                            "backendPort": 3389,
-                            "enableFloatingIP": false
-                        }
-                    }
-                ]
-            }
-        },
-        {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2019-04-01",
             "name": "[variables('adNicName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "VNet",
-                "[variables('loadBalancerName')]"
+                "vnet"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -225,17 +167,7 @@
                             "privateIPAddress": "[variables('adNicIPAddress')]",
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('adSubnetName'))]"
-                            },
-                            "loadBalancerBackendAddressPools": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', variables('loadBalancerName'), variables('loadBalancerBackEnd'))]"
-                                }
-                            ],
-                            "loadBalancerInboundNatRules": [
-                                {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', variables('loadBalancerName'), variables('inboundRdpNat'))]"
-                                }
-                            ]
+                            }
                         }
                     }
                 ]
@@ -248,8 +180,7 @@
             "location": "[parameters('location')]",
             "dependsOn": [
                 "[variables('adNicName')]",
-                "[variables('adAvailabilitySetName')]",
-                "[variables('loadBalancerName')]"
+                "[variables('adAvailabilitySetName')]"
             ],
             "properties": {
                 "hardwareProfile": {
@@ -271,7 +202,7 @@
                         "version": "latest"
                     },
                     "osDisk": {
-                        "name": "[concat(parameters('vmName'), '-osdisk')]",
+                        "name": "[concat(parameters('vmName'), '-osdisk-', substring(uniqueString(resourceGroup().id), 0, 6))]",
                         "caching": "ReadOnly",
                         "createOption": "FromImage",
                         "managedDisk": {
@@ -280,7 +211,7 @@
                     },
                     "dataDisks": [
                         {
-                            "name": "[concat(parameters('vmName'), '-datadisk')]",
+                            "name": "[concat(parameters('vmName'), '-datadisk-', substring(uniqueString(resourceGroup().id), 0, 6))]",
                             "caching": "ReadWrite",
                             "createOption": "Empty",
                             "diskSizeGB": 20,
