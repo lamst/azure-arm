@@ -1,105 +1,142 @@
 ﻿configuration CreateADPDC 
 { 
-   param 
-   ( 
+    param 
+    ( 
         [Parameter(Mandatory)]
-        [String]$DomainName,
+        [String]$DomainFQDN,
 
         [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$AdminCreds,
 
-        [Int]$RetryCount=20,
-        [Int]$RetryIntervalSec=30
+        [Int]$RetryCount = 20,
+        [Int]$RetryIntervalSec = 30
     ) 
     
     Import-DscResource -ModuleName xActiveDirectory, xStorage, xNetworking, PSDesiredStateConfiguration, xPendingReboot
-    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainName}\$($AdminCreds.UserName)", $AdminCreds.Password)
-    $Interface = Get-NetAdapter | Where Name -Like "Ethernet*"|Select-Object -First 1
+    [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
+    [System.Management.Automation.PSCredential ]$DomainCreds = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($AdminCreds.UserName)", $AdminCreds.Password)
+    $Interface = Get-NetAdapter | Where Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
 
     Node localhost
     {
-        LocalConfigurationManager 
-        {
+        LocalConfigurationManager {
             RebootNodeIfNeeded = $true
         }
 
-	    WindowsFeature DNS 
-        { 
+        #**********************************************************
+        # Initialization of VM
+        #**********************************************************
+        WindowsFeature DNS { 
             Ensure = "Present" 
-            Name = "DNS"		
+            Name   = "DNS"		
         }
 
-        Script EnableDNSDiags
-	    {
-      	    SetScript = { 
-		        Set-DnsServerDiagnostics -All $true
+        Script EnableDNSDiags {
+            SetScript  = { 
+                Set-DnsServerDiagnostics -All $true
                 Write-Verbose -Verbose "Enabling DNS client diagnostics" 
             }
-            GetScript =  { @{} }
+            GetScript  = { @{ } }
             TestScript = { $false }
-	        DependsOn = "[WindowsFeature]DNS"
+            DependsOn  = "[WindowsFeature]DNS"
         }
 
-	    WindowsFeature DnsTools
-	    {
-	        Ensure = "Present"
-            Name = "RSAT-DNS-Server"
+        WindowsFeature DnsTools {
+            Ensure    = "Present"
+            Name      = "RSAT-DNS-Server"
             DependsOn = "[WindowsFeature]DNS"
-	    }
+        }
 
-        xDnsServerAddress DnsServerAddress 
-        { 
+        xDnsServerAddress DnsServerAddress { 
             Address        = '127.0.0.1' 
             InterfaceAlias = $InterfaceAlias
             AddressFamily  = 'IPv4'
-	        DependsOn = "[WindowsFeature]DNS"
+            DependsOn      = "[WindowsFeature]DNS"
         }
 
-        xWaitforDisk Disk2
-        {
-            DiskId = 2
-            RetryIntervalSec =$RetryIntervalSec
-            RetryCount = $RetryCount
+        xWaitforDisk Disk2 {
+            DiskId           = 2
+            RetryIntervalSec = $RetryIntervalSec
+            RetryCount       = $RetryCount
         }
 
         xDisk ADDataDisk {
-            DiskId = 2
+            DiskId      = 2
             DriveLetter = "F"
-            DependsOn = "[xWaitForDisk]Disk2"
+            DependsOn   = "[xWaitForDisk]Disk2"
         }
 
-        WindowsFeature ADDSInstall 
-        { 
-            Ensure = "Present" 
-            Name = "AD-Domain-Services"
-	        DependsOn="[WindowsFeature]DNS" 
-        } 
+        WindowsFeature ADDSInstall { 
+            Ensure    = "Present" 
+            Name      = "AD-Domain-Services"
+            DependsOn = "[WindowsFeature]DNS" 
+        }
 
-        WindowsFeature ADDSTools
-        {
-            Ensure = "Present"
-            Name = "RSAT-ADDS-Tools"
+        WindowsFeature ADLDS { 
+            Name      = "RSAT-ADLDS";
+            Ensure    = "Present"; 
+            DependsOn = "[WindowsFeature]ADDSInstall" 
+        }
+
+        WindowsFeature ADDSTools {
+            Ensure    = "Present"
+            Name      = "RSAT-ADDS-Tools"
             DependsOn = "[WindowsFeature]ADDSInstall"
         }
 
-        WindowsFeature ADAdminCenter
-        {
-            Ensure = "Present"
-            Name = "RSAT-AD-AdminCenter"
+        WindowsFeature ADAdminCenter {
+            Ensure    = "Present"
+            Name      = "RSAT-AD-AdminCenter"
             DependsOn = "[WindowsFeature]ADDSInstall"
         }
          
-        xADDomain FirstDS 
-        {
-            DomainName = $DomainName
+        xADDomain FirstDS {
+            DomainName                    = $DomainFQDN
             DomainAdministratorCredential = $DomainCreds
             SafemodeAdministratorPassword = $DomainCreds
-            DatabasePath = "F:\NTDS"
-            LogPath = "F:\NTDS"
-            SysvolPath = "F:\SYSVOL"
-	        DependsOn = @("[xDisk]ADDataDisk", "[WindowsFeature]ADDSInstall")
-        } 
+            DatabasePath                  = "F:\NTDS"
+            LogPath                       = "F:\NTDS"
+            SysvolPath                    = "F:\SYSVOL"
+            DependsOn                     = @("[xDisk]ADDataDisk", "[WindowsFeature]ADDSInstall")
+        }
 
-   }
-} 
+        #**********************************************************
+        # Misc: Set email of AD domain admin
+        #**********************************************************
+        xADUser SetEmailOfDomainAdmin {
+            DomainAdministratorCredential = $DomainCreds
+            DomainName                    = $DomainFQDN
+            UserName                      = $AdminCreds.UserName
+            Password                      = $AdminCreds
+            EmailAddress                  = $AdminCreds.UserName + "@" + $DomainFQDN
+            PasswordAuthentication        = 'Negotiate'
+            Ensure                        = "Present"
+            PasswordNeverExpires          = $true
+            DependsOn                     = "[xADDomain]FirstDS"
+        }
+    }
+}
+
+function Get-NetBIOSName {
+    [OutputType([string])]
+    param(
+        [string]$DomainFQDN
+    )
+
+    if ($DomainFQDN.Contains('.')) {
+        $length = $DomainFQDN.IndexOf('.')
+        if ( $length -ge 16) {
+            $length = 15
+        }
+        return $DomainFQDN.Substring(0, $length)
+    }
+    else {
+        if ($DomainFQDN.Length -gt 15) {
+            return $DomainFQDN.Substring(0, 15)
+        }
+        else {
+            return $DomainFQDN
+        }
+    }
+}

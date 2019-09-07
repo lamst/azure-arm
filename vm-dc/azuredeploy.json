@@ -20,12 +20,6 @@
                 "description": "The FQDN of the Active Directory Domain to be created"
             }
         },
-        "dnsPrefix": {
-            "type": "string",
-            "metadata": {
-                "description": "The DNS prefix for the public IP address used by the Load Balancer"
-            }
-        },
         "vmName": {
             "type": "string",
             "metadata": {
@@ -248,7 +242,7 @@
                             "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('vm-dc/scripts/CreateADPDC.zip', parameters('_artifactsLocationSasToken')))]",
                             "ConfigurationFunction": "CreateADPDC.ps1\\CreateADPDC",
                             "Properties": {
-                                "DomainName": "[parameters('domainName')]",
+                                "DomainFQDN": "[parameters('domainName')]",
                                 "AdminCreds": {
                                     "UserName": "[parameters('adminUsername')]",
                                     "Password": "PrivateSettingsRef:AdminPassword"
