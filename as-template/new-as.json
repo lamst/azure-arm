@@ -8,6 +8,20 @@
                 "description": "Name of the availability set."
             }
         },
+        "faultDomainCount": {
+            "type": "int",
+            "defaultValue": 2,
+            "metadata": {
+                "description": "The number of fault domains."
+            }
+        },
+        "updateDomainCount": {
+            "type": "int",
+            "defaultValue": 3,
+            "metadata": {
+                "description": "The number of update domains."
+            }
+        },
         "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
@@ -19,13 +33,13 @@
     "variables": {},
     "resources": [
         {
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/availabilitySets",
             "name": "[parameters('availabilitySetName')]",
             "location": "[parameters('location')]",
             "properties": {
-              "platformFaultDomainCount": 2,
-              "platformUpdateDomainCount": 3
+              "platformFaultDomainCount": "[parameters('faultDomainCount')]",
+              "platformUpdateDomainCount": "[parameters('updateDomainCount')]"
             },
             "sku": {
               "name": "aligned"
