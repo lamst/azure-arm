@@ -169,15 +169,12 @@
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
-                    "uri": "[uri(parameters('_artifactsLocation'), concat('vnet-template/vnet.json', parameters('_artifactsLocationSasToken')))]",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('vnet-template/snet.json', parameters('_artifactsLocationSasToken')))]",
                     "contentVersion": "1.0.0.0"
                 },
                 "parameters": {
                     "virtualNetworkName": {
                         "value": "[parameters('virtualNetworkName')]"
-                    },
-                    "virtualNetworkAddressRange": {
-                        "value": "[parameters('virtualNetworkAddressRange')]"
                     },
                     "subnetName": {
                         "value": "[parameters('adfsSubnetName')]"
@@ -207,7 +204,7 @@
                             "privateIPAllocationMethod": "Static",
                             "privateIPAddress": "[parameters('adfsLBFrontEndIPAddress')]",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('adfsSubnetName')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('adfsSubnetName'))]"
                             }
                         }
                     }
@@ -219,7 +216,7 @@
                 ],
                 "probes":[
                     {
-                        "name": "[parameters('adfsLBProbeName')",
+                        "name": "[parameters('adfsLBProbeName')]",
                         "properties":{
                             "protocol": "Http",
                             "requestPath": "/adfs/probe",
@@ -234,13 +231,13 @@
                         "name": "adfs-lb-rule",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfiguration', parameters('adfsLBName'), variables('adfsLBFrontEnd'))]"
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', parameters('adfsLBName'), variables('adfsLBFrontEnd'))]"
                             },
                             "backendAddressPool": {
                                 "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('adfsLBName'), variables('adfsLBBackEnd'))]"
                             },
                             "probe": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', parameters(adfsLBName'), parameters('adfsLBProbeName'))]"
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', parameters('adfsLBName'), parameters('adfsLBProbeName'))]"
                             },
                             "protocol": "Tcp",
                             "frontendPort": 443,

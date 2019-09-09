@@ -8,12 +8,6 @@
                 "description": "The name of the new virtual network."
             }
         },
-        "virtualNetworkAddressRange": {
-            "type": "string",
-            "metadata": {
-                "description": "The address range of the new virtual network in CIDR format."
-            }
-        },
         "subnetName": {
             "type": "string",
             "metadata": {
@@ -36,25 +30,14 @@
     },
     "resources": [
         {
-            "type": "Microsoft.Network/virtualNetworks",
-            "name": "[parameters('virtualNetworkName')]",
+            "type": "Microsoft.Network/virtualNetworks/subnets",
+            "name": "[concat(parameters('virtualNetworkName'), '/', parameters('subnetName'))]",
             "apiVersion": "2019-04-01",
             "location": "[parameters('location')]",
             "properties": {
-                "addressSpace": {
-                    "addressPrefixes": [
-                        "[parameters('virtualNetworkAddressRange')]"
-                    ]
-                },
-                "subnets": [
-                    {
-                        "name": "[parameters('subnetName')]",
-                        "properties": {
-                            "addressPrefix": "[parameters('subnetRange')]"
-                        }
-                    }
-                ]
+                "addressPrefix": "[parameters('subnetRange')]"
             }
         }
-    ]
+    ],
+    "outputs": {}
 }
