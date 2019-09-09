@@ -73,6 +73,20 @@
             },
             "defaultValue": "10.0.1.0/24"
         },
+        "adfsLBName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the load balancer for the ADFS farm"
+            },
+            "defaultValue": "adfs-ilb"
+        },
+        "adfsLBFrontEndIPAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "The IP address of the front end of the load balancer for the ADFS"
+            },
+            "defaultValue": "10.0.1.4"
+        },
         "dnsServer": {
             "type": "string",
             "defaultValue": "10.0.0.4",
@@ -84,6 +98,13 @@
             "type": "string",
             "metadata": {
                 "description": "The name of the domain controller."
+            }
+        },
+        "adfsLBProbeName": {
+            "type": "string",
+            "defaultValue": "adfs-prob",
+            "metadata": {
+                "description": "The name of the ADFS health probe."
             }
         },
         "_artifactsLocation": {
@@ -110,7 +131,9 @@
     },
     "variables": {
         "adfsNicName": "[concat(parameters('vmName'), '-nic-', substring(uniqueString(resourceGroup().id), 0, 6))]",
-        "adfsAvailabilitySetName": "adfs-as"
+        "adfsAvailabilitySetName": "adfs-as",
+        "adfsLBFrontEnd": "lb-fe",
+        "adfsLBBackEnd": "lb-be"
     },
     "resources": [
         {
@@ -169,12 +192,73 @@
             }
         },
         {
+            "type": "Microsoft.Network/loadBalancers",
+            "apiVersion": "2019-04-01",
+            "name": "[parameters('adfsLBName')]",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[variables('adfsLBFrontEnd')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[parameters('adfsLBFrontEndIPAddress')]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('adfsSubnetName')]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('adfsLBBackEnd')]"
+                    }
+                ],
+                "probes":[
+                    {
+                        "name": "[parameters('adfsLBProbeName')",
+                        "properties":{
+                            "protocol": "Http",
+                            "requestPath": "/adfs/probe",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 10
+                        }
+                    }
+                ],
+                "loadBalancingRules":[
+                    {
+                        "name": "adfs-lb-rule",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfiguration', parameters('adfsLBName'), variables('adfsLBFrontEnd'))]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('adfsLBName'), variables('adfsLBBackEnd'))]"
+                            },
+                            "probe": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/probes', parameters(adfsLBName'), parameters('adfsLBProbeName'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 443,
+                            "backendPort": 443,
+                            "enableFloatingIP": true
+                        }
+                    }
+                ]
+            }
+        },
+        {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2019-04-01",
             "name": "[variables('adfsNicName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "vnet"
+                "vnet",
+                "[parameters('adfsLBName')]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -184,7 +268,12 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('adfsSubnetName'))]"
-                            }
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('adfsLBName'), variables('adfsLBBackEnd'))]"
+                                }
+                            ]
                         }
                     }
                 ]
@@ -262,7 +351,7 @@
                         "typeHandlerVersion": "2.19",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('vm-dc/scripts/CreateADPDC.zip', parameters('_artifactsLocationSasToken')))]",
+                            "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('vm-adfs/scripts/ConfigureADFS.zip', parameters('_artifactsLocationSasToken')))]",
                             "ConfigurationFunction": "ConfigureADFS.ps1\\ConfigureADFS",
                             "Properties": {
                                 "DomainFQDN": "[parameters('domainName')]",
