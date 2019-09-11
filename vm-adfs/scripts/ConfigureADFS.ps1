@@ -17,7 +17,7 @@ configuration ConfigureADFS
         [Parameter(Mandatory)] 
         [String]$DCName,
 
-        [String] $AdfsSiteName = "fs1",
+        [String]$AdfsSiteName = "fs1",
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
     )
