@@ -133,7 +133,8 @@
         "adfsNicName": "[concat(parameters('vmName'), '-nic-', substring(uniqueString(resourceGroup().id), 0, 6))]",
         "adfsAvailabilitySetName": "adfs-as",
         "adfsLBFrontEnd": "lb-fe",
-        "adfsLBBackEnd": "lb-be"
+        "adfsLBBackEnd": "lb-be",
+        "adfsLBRdpRule": "lb-inbound-rdp"
     },
     "resources": [
         {
@@ -193,6 +194,9 @@
             "apiVersion": "2019-04-01",
             "name": "[parameters('adfsLBName')]",
             "location": "[parameters('location')]",
+            "dependsOn": [
+                "vnet"
+            ],
             "sku": {
                 "name": "Standard"
             },
@@ -243,6 +247,20 @@
                             "frontendPort": 443,
                             "backendPort": 443,
                             "enableFloatingIP": true
+                        }
+                    }
+                ],
+                "inboundNatRules": [
+                    {
+                        "name": "[variables('adfsLBRdpRule')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', parameters('adfsLBName'), variables('adfsLBFrontEnd'))]"
+                            },
+                            "protocol": "Tcp",
+                            "frontendPort": 3389,
+                            "backendPort": 3389,
+                            "enableFloatingIP": false
                         }
                     }
                 ]

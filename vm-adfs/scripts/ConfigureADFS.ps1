@@ -3,9 +3,6 @@ configuration ConfigureADFS
     param
     (
         [Parameter(Mandatory)]
-        [String]$DomainName,
-
-        [Parameter(Mandatory)]
         [System.Management.Automation.PSCredential]$DomainAdminCreds,
 
         [Parameter(Mandatory)] 
