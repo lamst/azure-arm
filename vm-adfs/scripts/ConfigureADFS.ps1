@@ -34,7 +34,6 @@ configuration ConfigureADFS
     Node localhost
     {
         LocalConfigurationManager {
-            ConfigurationMode  = 'ApplyOnly'
             RebootNodeIfNeeded = $true
         }
 
