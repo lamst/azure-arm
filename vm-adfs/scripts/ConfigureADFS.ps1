@@ -19,10 +19,12 @@ configuration ConfigureADFS
 
         [String]$AdfsSiteName = "fs1",
         [Int]$RetryCount = 20,
-        [Int]$RetryIntervalSec = 30
+        [Int]$RetryIntervalSec = 30,
+        [Int]$RefreshFrequencyMins = 30,
+        [Int]$ConfigurationModeFrequencyMins = 15
     )
 
-    Import-DscResource -ModuleName ComputerManagementDsc, xActiveDirectory, xCredSSP, NetworkingDsc, xPSDesiredStateConfiguration, ActiveDirectoryCSDsc, CertificateDsc, xPendingReboot, cADFS, xDnsServer
+    Import-DscResource -ModuleName ComputerManagementDsc, xActiveDirectory, xCredSSP, NetworkingDsc, PSDesiredStateConfiguration, xPSDesiredStateConfiguration, ActiveDirectoryCSDsc, CertificateDsc, xPendingReboot, cADFS, xDnsServer
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
@@ -34,7 +36,13 @@ configuration ConfigureADFS
     Node localhost
     {
         LocalConfigurationManager {
+            RefreshFrequencyMins = $RefreshFrequencyMins
+            RefreshMode = "PULL"
+            ConfigurationMode = "ApplyOnly"
+            AllowModuleOverwrite  = $true
             RebootNodeIfNeeded = $true
+            ActionAfterReboot = "ContinueConfiguration"
+            ConfigurationModeFrequencyMins = $ConfigurationModeFrequencyMins
         }
 
         #**********************************************************
