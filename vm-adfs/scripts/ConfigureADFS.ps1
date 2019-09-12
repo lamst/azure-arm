@@ -37,11 +37,9 @@ configuration ConfigureADFS
     {
         LocalConfigurationManager {
             RefreshFrequencyMins = $RefreshFrequencyMins
-            RefreshMode = "PULL"
             ConfigurationMode = "ApplyOnly"
             AllowModuleOverwrite  = $true
             RebootNodeIfNeeded = $true
-            ActionAfterReboot = "ContinueConfiguration"
             ConfigurationModeFrequencyMins = $ConfigurationModeFrequencyMins
         }
 
