@@ -17,6 +17,9 @@ configuration ConfigureADFS
         [Parameter(Mandatory)] 
         [String]$DCName,
 
+        [Parameter(Mandatory)] 
+        [String]$PrivateIP,
+
         [String]$AdfsSiteName = "fs1",
         [Int]$RetryCount = 20,
         [Int]$RetryIntervalSec = 30
