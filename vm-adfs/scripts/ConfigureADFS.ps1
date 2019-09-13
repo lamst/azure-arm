@@ -33,7 +33,8 @@ configuration ConfigureADFS
     Node localhost
     {
         LocalConfigurationManager {
-            ConfigurationMode = "ApplyOnly"
+            ConfigurationMode  = "ApplyOnly"
+            ActionAfterReboot  = 'ContinueConfiguration'
             RebootNodeIfNeeded = $true
         }
 
@@ -43,17 +44,42 @@ configuration ConfigureADFS
         WindowsFeature ADTools { 
             Name = "RSAT-AD-Tools"
             Ensure = "Present"
+            IncludeAllSubFeature = $true
         }
 
         WindowsFeature ADPS { 
             Name = "RSAT-AD-PowerShell"
             Ensure = "Present"
+            IncludeAllSubFeature = $true
         }
 
         WindowsFeature DnsTools { 
             Name = "RSAT-DNS-Server"
             Ensure = "Present"
         }
+
+        DnsServerAddress DnsServerAddress
+        {
+            Address        = $DNSServer
+            InterfaceAlias = $InterfaceAlias
+            AddressFamily  = 'IPv4'
+            DependsOn      = "[WindowsFeature]ADPS"
+        }
+
+        xCredSSP CredSSPServer { 
+            Ensure = "Present"
+            Role = "Server"
+            DependsOn = "[DnsServerAddress]DnsServerAddress" 
+        }
+
+        xCredSSP CredSSPClient { 
+            Ensure = "Present"
+            Role = "Client"
+            DelegateComputers = "*.$DomainFQDN", "localhost"
+            DependsOn = "[xCredSSP]CredSSPServer" 
+        }
+
+        
     }
 }
 
