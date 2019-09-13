@@ -170,6 +170,143 @@ configuration ConfigureADFS
             DependsOn = '[ADCSCertificationAuthority]ADCS'
             PsDscRunAsCredential = $DomainAdminCredsQualified
         }
+
+        CertReq ADFSSiteCert
+        {
+            CARootName                = "$DomainNetbiosName-$ComputerName-CA"
+            CAServerFQDN              = "$ComputerName.$DomainFQDN"
+            Subject                   = "$AdfsSiteName.$DomainFQDN"
+            FriendlyName              = "$AdfsSiteName.$DomainFQDN site certificate"
+            KeyLength                 = '2048'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
+            AutoRenew                 = $true
+            SubjectAltName            = "dns=certauth.$AdfsSiteName.$DomainFQDN&dns=$AdfsSiteName.$DomainFQDN"
+            Credential                = $DomainAdminCredsQualified
+            DependsOn = '[WaitForCertificateServices]WaitAfterADCSProvisioning'
+        }
+
+        CertReq ADFSSigningCert
+        {
+            CARootName                = "$DomainNetbiosName-$ComputerName-CA"
+            CAServerFQDN              = "$ComputerName.$DomainFQDN"
+            Subject                   = "$AdfsSiteName.Signing"
+            FriendlyName              = "$AdfsSiteName Signing"
+            KeyLength                 = '2048'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
+            AutoRenew                 = $true
+            Credential                = $DomainAdminCredsQualified
+            DependsOn = '[WaitForCertificateServices]WaitAfterADCSProvisioning'
+        }
+
+        CertReq ADFSDecryptionCert
+        {
+            CARootName                = "$DomainNetbiosName-$ComputerName-CA"
+            CAServerFQDN              = "$ComputerName.$DomainFQDN"
+            Subject                   = "$AdfsSiteName.Decryption"
+            FriendlyName              = "$AdfsSiteName Decryption"
+            KeyLength                 = '2048'
+            Exportable                = $true
+            ProviderName              = '"Microsoft RSA SChannel Cryptographic Provider"'
+            OID                       = '1.3.6.1.5.5.7.3.1'
+            KeyUsage                  = '0xa0'
+            CertificateTemplate       = 'WebServer'
+            AutoRenew                 = $true
+            Credential                = $DomainAdminCredsQualified
+            DependsOn = '[WaitForCertificateServices]WaitAfterADCSProvisioning'
+        }
+
+        xADUser CreateAdfsSvcAccount
+        {
+            DomainAdministratorCredential = $DomainAdminCredsQualified
+            DomainName = $DomainFQDN
+            UserName = $AdfsSvcCreds.UserName
+            Password = $AdfsSvcCreds
+            Ensure = "Present"
+            PasswordAuthentication = 'Negotiate'
+            PasswordNeverExpires = $true
+            DependsOn = "[CertReq]ADFSSiteCert", "[CertReq]ADFSSigningCert", "[CertReq]ADFSDecryptionCert"
+        }
+
+        Group AddAdfsSvcAccountToDomainAdminsGroup
+        {
+            GroupName ='Administrators'   
+            Ensure = 'Present'             
+            MembersToInclude= $AdfsSvcCredsQualified.UserName
+            Credential = $DomainAdminCredsQualified    
+            PsDscRunAsCredential = $DomainAdminCredsQualified
+            DependsOn = "[xADUser]CreateAdfsSvcAccount"
+        }
+
+        WindowsFeature AddADFS { 
+            Name = "ADFS-Federation"
+            Ensure = "Present"
+            DependsOn = "[Group]AddAdfsSvcAccountToDomainAdminsGroup" 
+        }
+
+        xDnsRecord AddADFSHostDNS {
+            Name = $AdfsSiteName
+            Zone = $DomainFQDN
+            DnsServer = $DCName
+            Target = $PrivateIP
+            Type = "ARecord"
+            Ensure = "Present"
+            PsDscRunAsCredential = $DomainAdminCredsQualified
+            DependsOn = "[WindowsFeature]AddADFS"
+        }
+
+        xScript ExportCertificates
+        {
+            SetScript = 
+            {
+                $destinationPath = "C:\Setup"
+                $adfsSigningCertName = "ADFS Signing.cer"
+                $adfsSigningIssuerCertName = "ADFS Signing issuer.cer"
+                Write-Verbose -Message "Exporting public key of ADFS signing / signing issuer certificates..."
+                New-Item $destinationPath -Type directory -ErrorAction SilentlyContinue
+                $signingCert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName "$using:AdfsSiteName.Signing"
+                $signingCert | Export-Certificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSigningCertName))
+                Get-ChildItem -Path "cert:\LocalMachine\Root\"| Where-Object{$_.Subject -eq  $signingCert.Issuer}| Select-Object -First 1| Export-Certificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSigningIssuerCertName))
+                Write-Verbose -Message "Public key of ADFS signing / signing issuer certificates successfully exported"
+            }
+            GetScript =  
+            {
+                # This block must return a hashtable. The hashtable must only contain one key Result and the value must be of type String.
+                return @{ "Result" = "false" }
+            }
+            TestScript = 
+            {
+                # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
+               return $false
+            }
+            DependsOn = "[WindowsFeature]AddADFS"
+        }
+
+        cADFSFarm CreateADFSFarm
+        {
+            ServiceCredential = $AdfsSvcCredsQualified
+            InstallCredential = $DomainAdminCredsQualified
+            #CertificateThumbprint = $siteCert
+            DisplayName = "$AdfsSiteName.$DomainFQDN"
+            ServiceName = "$AdfsSiteName.$DomainFQDN"
+            CertificateSubject = "$AdfsSiteName.$DomainFQDN"
+            #GroupServiceAccountIdentifier = $AdfsSvcCredsQualified
+            #SigningCertificateThumbprint = $signingCert
+            #DecryptionCertificateThumbprint = $decryptionCert
+            #CertificateName = "$AdfsSiteName.$DomainFQDN"
+            #SigningCertificateName = "$AdfsSiteName.Signing"
+            #DecryptionCertificateName = "$AdfsSiteName.Decryption"
+            Ensure= 'Present'
+            PsDscRunAsCredential = $DomainAdminCredsQualified
+            DependsOn = "[WindowsFeature]AddADFS"
+        }
     }
 }
 
