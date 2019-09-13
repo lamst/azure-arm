@@ -370,7 +370,7 @@
                             "ConfigurationFunction": "ConfigureADFS.ps1\\ConfigureADFS",
                             "Properties": {
                                 "DomainFQDN": "[parameters('domainName')]",
-                                "AdminCreds": {
+                                "DomainAdminCreds": {
                                     "UserName": "[parameters('adminUsername')]",
                                     "Password": "PrivateSettingsRef:AdminPassword"
                                 },
@@ -379,7 +379,8 @@
                                     "Password": "PrivateSettingsRef:SvcPassword"
                                 },
                                 "DnsServer": "[parameters('dnsServer')]",
-                                "DCName": "[parameters('dcName')]"
+                                "DCName": "[parameters('dcName')]",
+                                "PrivateIP": "[parameters('adfsLBFrontEndIPAddress')]"
                             }
                         },
                         "protectedSettings": {

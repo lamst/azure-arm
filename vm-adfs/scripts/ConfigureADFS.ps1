@@ -33,6 +33,9 @@ configuration ConfigureADFS
     [System.Management.Automation.PSCredential] $AdfsSvcCredsQualified = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($AdfsSvcCreds.UserName)", $AdfsSvcCreds.Password)
     [String] $ComputerName = Get-Content env:computername
 
+    $CertPwd = $DomainAdminCreds.Password
+    $ClearPwd = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($CertPwd))
+
     Node localhost
     {
         LocalConfigurationManager {
@@ -265,19 +268,41 @@ configuration ConfigureADFS
             DependsOn = "[WindowsFeature]AddADFS"
         }
 
+        File CertFolder
+        {
+            DestinationPath = "C:\Cert"
+            Type = "Directory"
+            Ensure = "Present"
+        }
+
+        SmbShare CertShare
+        {
+            Ensure = "Present"
+            Name = "Cert"
+            Path = "C:\Cert"
+            FullAccess = @("Domain Admins","Domain Computers")
+            ReadAccess = "Authenticated Users"
+            DependsOn = "[File]CertFolder"
+        }
+
         xScript ExportCertificates
         {
             SetScript = 
             {
-                $destinationPath = "C:\Setup"
+                $destinationPath = "C:\Cert"
                 $adfsSigningCertName = "ADFS Signing.cer"
-                $adfsSigningIssuerCertName = "ADFS Signing issuer.cer"
+                $adfsSigningIssuerCertName = "ADFS Signing Issuer.cer"
                 Write-Verbose -Message "Exporting public key of ADFS signing / signing issuer certificates..."
                 New-Item $destinationPath -Type directory -ErrorAction SilentlyContinue
                 $signingCert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName "$using:AdfsSiteName.Signing"
                 $signingCert | Export-Certificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSigningCertName))
                 Get-ChildItem -Path "cert:\LocalMachine\Root\"| Where-Object{$_.Subject -eq  $signingCert.Issuer}| Select-Object -First 1| Export-Certificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSigningIssuerCertName))
                 Write-Verbose -Message "Public key of ADFS signing / signing issuer certificates successfully exported"
+                $adfsSiteCertName = "ADFS Site.pfx"
+                Write-Verbose -Message "Exporting ADFS site certificates..."
+                $siteCert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName "$using:AdfsSiteName.$using:DomainFQDN"
+                $siteCert | Export-PfxCertificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSiteCertName)) -Password (ConvertTo-SecureString $using:ClearPwd -AsPlainText -Force)
+                Write-Verbose -Message "Public key of ADFS site certificate successfully exported"
             }
             GetScript =  
             {
