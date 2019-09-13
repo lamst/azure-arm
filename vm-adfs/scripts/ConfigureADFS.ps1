@@ -134,6 +134,32 @@ configuration ConfigureADFS
             DependsOn="[Computer]DomainJoin"
         }
 
+        #**********************************************************
+        # Configure AD CS
+        #**********************************************************
+        WindowsFeature AddCertAuthority
+        { 
+            Name = "ADCS-Cert-Authority"
+            Ensure = "Present"
+            DependsOn = "[Computer]DomainJoin" 
+        }
+
+        WindowsFeature AddADCSManagementTools
+        {
+            Name = "RSAT-ADCS-Mgmt"
+            Ensure = "Present"
+            DependsOn = "[Computer]DomainJoin"
+        }
+
+        ADCSCertificationAuthority ADCS
+        {
+            IsSingleInstance = "Yes"
+            CAType = "EnterpriseRootCA"
+            Ensure = "Present"
+            Credential = $DomainAdminCredsQualified
+            DependsOn = "[WindowsFeature]AddCertAuthority"
+        }
+
         
     }
 }
