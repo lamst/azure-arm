@@ -314,7 +314,7 @@ configuration ConfigureADFS
                 # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
                return $false
             }
-            DependsOn = "[WindowsFeature]AddADFS"
+            DependsOn = "[WindowsFeature]AddADFS", "[SmbShare]CertShare"
         }
 
         cADFSFarm CreateADFSFarm
