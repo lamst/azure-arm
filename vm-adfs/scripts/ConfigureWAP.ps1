@@ -6,6 +6,9 @@ Configuration ConfigureWAP
         [System.Management.Automation.PSCredential]$DomainAdminCreds,
 
         [Parameter(Mandatory)] 
+        [String]$DNSServer,
+
+        [Parameter(Mandatory)] 
         [String]$CAName,
 
         [Parameter(Mandatory)] 
@@ -15,8 +18,10 @@ Configuration ConfigureWAP
         [String]$AdfsSiteName
     )
 
-    Import-DscResource -ModuleName PSDesiredStateConfiguration, ComputerManagementDsc, xPSDesiredStateConfiguration
+    Import-DscResource -ModuleName PSDesiredStateConfiguration, ComputerManagementDsc, NetworkingDsc, xPSDesiredStateConfiguration
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
+    $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
+    $InterfaceAlias = $($Interface.Name)
     [System.Management.Automation.PSCredential] $DomainAdminCredsQualified = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($DomainAdminCreds.UserName)", $DomainAdminCreds.Password)
 
     Node localhost
@@ -28,6 +33,9 @@ Configuration ConfigureWAP
             RebootNodeIfNeeded = $true
         }
 
+        #**********************************************************
+        # Initialization of VM
+        #**********************************************************
         WindowsFeature ADPS {
             Ensure               = "Present"
             Name                 = "RSAT-AD-PowerShell"
@@ -45,6 +53,19 @@ Configuration ConfigureWAP
             Name   = "Telnet-Client"
         }
 
+        WindowsFeature DnsTools { 
+            Name = "RSAT-DNS-Server"
+            Ensure = "Present"
+        }
+
+        DnsServerAddress DnsServerAddress
+        {
+            Address        = $DNSServer
+            InterfaceAlias = $InterfaceAlias
+            AddressFamily  = 'IPv4'
+            DependsOn      = "[WindowsFeature]ADPS"
+        }
+
         WindowsFeature WebAppProxy {
             Ensure = "Present"
             Name   = "Web-Application-Proxy"
@@ -54,7 +75,7 @@ Configuration ConfigureWAP
             SetScript = 
             {
                 $Cred = $using:DomainAdminCredsQualified
-                $PathToCert = "\\$using:CAName\Cert\*.pfx"
+                $PathToCert = "\\$using:CAName.$using:DomainFQDN\Cert\*.pfx"
                 $CertFile = Get-ChildItem -Path $PathToCert
                 for ($File = 0; $File -lt $CertFile.Count; $File++)
                 {
@@ -76,7 +97,7 @@ Configuration ConfigureWAP
                 # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
                return $false
             }
-            DependsOn = "[WindowsFeature]WebAppProxy"
+            DependsOn = "[WindowsFeature]WebAppProxy", "[DnsServerAddress]DnsServerAddress"
         }
     }
 }

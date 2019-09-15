@@ -280,8 +280,8 @@ configuration ConfigureADFS
             Ensure = "Present"
             Name = "Cert"
             Path = "C:\Cert"
-            FullAccess = @("Domain Admins","Domain Computers")
-            ReadAccess = "Authenticated Users"
+            FullAccess = @("Domain Admins", "Domain Computers")
+            ReadAccess = @("Everyone")
             DependsOn = "[File]CertFolder"
         }
 
