@@ -22,6 +22,7 @@ Configuration ConfigureWAP
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
+    $CertPath = "C:\Cert"
     [System.Management.Automation.PSCredential] $DomainAdminCredsQualified = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($DomainAdminCreds.UserName)", $DomainAdminCreds.Password)
 
     Node localhost
@@ -71,11 +72,28 @@ Configuration ConfigureWAP
             Name   = "Web-Application-Proxy"
         }
 
+        File CertFolder
+        {
+            DestinationPath = "$CertPath"
+            Type = "Directory"
+            Ensure = "Present"
+        }
+
+        File CopyCert {
+            SourcePath = "\\$CAName.$DomainFQDN\Cert"
+            DestinationPath =  = "$CertPath"
+            Type = "Directory"
+            Recurse = $true
+            Ensure = "Present"
+            Credential = $DomainAdminCredsQualified
+            DependsOn = "[File]CertFolder"
+        }
+
         xScript ImportCertificateAndInstallWAP {
             SetScript = 
             {
                 $Cred = $using:DomainAdminCredsQualified
-                $PathToCert = "\\$using:CAName.$using:DomainFQDN\Cert\*.pfx"
+                $PathToCert = "$using:CertPath\*.pfx"
                 $CertFile = Get-ChildItem -Path $PathToCert
                 for ($File = 0; $File -lt $CertFile.Count; $File++)
                 {
@@ -85,7 +103,7 @@ Configuration ConfigureWAP
 
                 $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
                 $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
-                Install-WebApplicationProxy -FederationServiceTrustCredential $Cred -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
+                Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
             }
             GetScript =  
             {

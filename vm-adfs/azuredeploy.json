@@ -132,9 +132,9 @@
     "variables": {
         "adfsNicName": "[concat(parameters('vmName'), '-nic-', substring(uniqueString(resourceGroup().id), 0, 6))]",
         "adfsAvailabilitySetName": "adfs-as",
-        "adfsLBFrontEnd": "lb-fe",
-        "adfsLBBackEnd": "lb-be",
-        "adfsLBRdpRule": "lb-inbound-rdp"
+        "adfsLBFrontEnd": "adfs-lb-fe",
+        "adfsLBBackEnd": "adfs-lb-be",
+        "adfsLBRdpRule": "adfs-lb-inbound-rdp"
     },
     "resources": [
         {
