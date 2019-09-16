@@ -18,7 +18,7 @@ Configuration ConfigureWAP
         [String]$AdfsSiteName
     )
 
-    Import-DscResource -ModuleName PSDesiredStateConfiguration, ComputerManagementDsc, NetworkingDsc, xPSDesiredStateConfiguration
+    Import-DscResource -ModuleName PSDesiredStateConfiguration, ComputerManagementDsc, NetworkingDsc, xPSDesiredStateConfiguration, CertificateDsc
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
@@ -93,12 +93,15 @@ Configuration ConfigureWAP
             {
                 $Cred = $using:DomainAdminCredsQualified
                 $PathToCert = "$using:CertPath\*.pfx"
-                $CertFiles = Get-ChildItem -Path $PathToCert
-                foreach ($CertFile in $CertFiles)
-                {
-                    $CertPath = $CertFile.FullName
-                    Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
-                }
+                $SiteCertFile = Get-ChildItem -Path $PathToCert | Select-Object -First 1
+                $SiteCert = Get-PfxCertificate -FilePath $SiteCertFile.FullName -Password $Cred.Password 
+
+                # $CertFiles = Get-ChildItem -Path $PathToCert
+                # foreach ($CertFile in $CertFiles)
+                # {
+                #     $CertPath = $CertFile.FullName
+                #     Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
+                # }
 
                 $PathToCert = "$using:CertPath\*.cer"
                 $CertFiles = Get-ChildItem -Path $PathToCert
@@ -123,6 +126,15 @@ Configuration ConfigureWAP
                return $false
             }
             DependsOn = "[WindowsFeature]WebAppProxy", "[DnsServerAddress]DnsServerAddress", "[File]CopyCert"
+        }
+
+        PfxImport SiteCert
+        {
+            Thumbprint = $SiteCert.Thumbprint
+            Path = $SiteCert.FullName
+            Location = "LocalMachine"
+            Store = "My"
+            Credential = $DomainAdminCreds
         }
     }
 }
