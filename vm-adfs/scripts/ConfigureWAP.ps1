@@ -93,10 +93,10 @@ Configuration ConfigureWAP
             {
                 $Cred = $using:DomainAdminCredsQualified
                 $PathToCert = "$using:CertPath\*.pfx"
-                $CertFile = Get-ChildItem -Path $PathToCert
-                for ($File = 0; $File -lt $CertFile.Count; $File++)
+                $CertFiles = Get-ChildItem -Path $PathToCert
+                foreach ($CertFile in $CertFiles)
                 {
-                    $CertPath = $CertFile[$File].FullName
+                    $CertPath = $CertFile.FullName
                     Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
                 }
 
