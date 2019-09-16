@@ -47,19 +47,22 @@ configuration ConfigureADFS
         #**********************************************************
         # Initialization of VM
         #**********************************************************
-        WindowsFeature ADTools { 
+        WindowsFeature ADTools 
+        { 
             Name = "RSAT-AD-Tools"
             Ensure = "Present"
             IncludeAllSubFeature = $true
         }
 
-        WindowsFeature ADPS { 
+        WindowsFeature ADPS 
+        { 
             Name = "RSAT-AD-PowerShell"
             Ensure = "Present"
             IncludeAllSubFeature = $true
         }
 
-        WindowsFeature DnsTools { 
+        WindowsFeature DnsTools 
+        { 
             Name = "RSAT-DNS-Server"
             Ensure = "Present"
         }
@@ -72,13 +75,15 @@ configuration ConfigureADFS
             DependsOn      = "[WindowsFeature]ADPS"
         }
 
-        xCredSSP CredSSPServer { 
+        xCredSSP CredSSPServer 
+        { 
             Ensure = "Present"
             Role = "Server"
             DependsOn = "[DnsServerAddress]DnsServerAddress" 
         }
 
-        xCredSSP CredSSPClient { 
+        xCredSSP CredSSPClient 
+        { 
             Ensure = "Present"
             Role = "Client"
             DelegateComputers = "*.$DomainFQDN", "localhost"
@@ -251,13 +256,15 @@ configuration ConfigureADFS
             DependsOn = "[xADUser]CreateAdfsSvcAccount"
         }
 
-        WindowsFeature AddADFS { 
+        WindowsFeature AddADFS 
+        { 
             Name = "ADFS-Federation"
             Ensure = "Present"
             DependsOn = "[Group]AddAdfsSvcAccountToDomainAdminsGroup" 
         }
 
-        xDnsRecord AddADFSHostDNS {
+        xDnsRecord AddADFSHostDNS 
+        {
             Name = $AdfsSiteName
             Zone = $DomainFQDN
             DnsServer = $DCName

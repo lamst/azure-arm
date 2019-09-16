@@ -37,24 +37,28 @@ Configuration ConfigureWAP
         #**********************************************************
         # Initialization of VM
         #**********************************************************
-        WindowsFeature ADPS {
+        WindowsFeature ADPS 
+        {
             Ensure               = "Present"
             Name                 = "RSAT-AD-PowerShell"
             IncludeAllSubFeature = $true
         }
 
-        WindowsFeature RemoteAcess {
+        WindowsFeature RemoteAcess 
+        {
             Ensure               = "Present"
             Name                 = "RSAT-RemoteAccess"
             IncludeAllSubFeature = $true
         }
 
-        WindowsFeature Telnet {
+        WindowsFeature Telnet 
+        {
             Ensure = "Present"
             Name   = "Telnet-Client"
         }
 
-        WindowsFeature DnsTools { 
+        WindowsFeature DnsTools 
+        { 
             Name = "RSAT-DNS-Server"
             Ensure = "Present"
         }
@@ -67,29 +71,24 @@ Configuration ConfigureWAP
             DependsOn      = "[WindowsFeature]ADPS"
         }
 
-        WindowsFeature WebAppProxy {
+        WindowsFeature WebAppProxy 
+        {
             Ensure = "Present"
             Name   = "Web-Application-Proxy"
         }
 
-        File CertFolder
+        File CopyCert 
         {
-            DestinationPath = "$CertPath"
-            Type = "Directory"
-            Ensure = "Present"
-        }
-
-        File CopyCert {
             SourcePath = "\\$CAName.$DomainFQDN\Cert"
             DestinationPath = "$CertPath"
             Type = "Directory"
             Recurse = $true
             Ensure = "Present"
             Credential = $DomainAdminCredsQualified
-            DependsOn = "[File]CertFolder"
         }
 
-        xScript ImportCertificateAndInstallWAP {
+        xScript ImportCertificateAndInstallWAP 
+        {
             SetScript = 
             {
                 $Cred = $using:DomainAdminCredsQualified
