@@ -81,7 +81,7 @@ Configuration ConfigureWAP
 
         File CopyCert {
             SourcePath = "\\$CAName.$DomainFQDN\Cert"
-            DestinationPath =  = "$CertPath"
+            DestinationPath = "$CertPath"
             Type = "Directory"
             Recurse = $true
             Ensure = "Present"
@@ -115,7 +115,7 @@ Configuration ConfigureWAP
                 # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
                return $false
             }
-            DependsOn = "[WindowsFeature]WebAppProxy", "[DnsServerAddress]DnsServerAddress"
+            DependsOn = "[WindowsFeature]WebAppProxy", "[DnsServerAddress]DnsServerAddress", "[File]CopyCert"
         }
     }
 }
