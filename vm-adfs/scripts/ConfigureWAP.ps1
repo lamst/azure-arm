@@ -92,6 +92,14 @@ Configuration ConfigureWAP
             SetScript = 
             {
                 $Cred = $using:DomainAdminCredsQualified
+                $PathToCert = "$using:CertPath\*.cer"
+                $CertFiles = Get-ChildItem -Path $PathToCert
+                foreach ($CertFile in $CertFiles)
+                {
+                    $CertPath = $CertFile.FullName
+                    Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
+                }
+                
                 $PathToCert = "$using:CertPath\*.pfx"
                 $CertFiles = Get-ChildItem -Path $PathToCert
                 foreach ($CertFile in $CertFiles)
@@ -100,17 +108,9 @@ Configuration ConfigureWAP
                     Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
                 }
 
-                $PathToCert = "$using:CertPath\*.cer"
-                $CertFiles = Get-ChildItem -Path $PathToCert
-                foreach ($CertFile in $CertFiles)
-                {
-                    $CertPath = $CertFile.FullName
-                    Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
-                }
-
-                $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
-                $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
-                Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
+                # $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
+                # $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
+                # Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
             }
             GetScript =  
             {
