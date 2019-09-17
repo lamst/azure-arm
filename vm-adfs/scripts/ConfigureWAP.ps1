@@ -135,6 +135,7 @@ Configuration ConfigureWAP
             Location = "LocalMachine"
             Store = "My"
             Credential = $DomainAdminCreds
+            DependsOn = "[xScript]ImportCertificateAndInstallWAP"
         }
     }
 }
