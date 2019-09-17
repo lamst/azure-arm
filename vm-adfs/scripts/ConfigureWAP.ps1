@@ -18,7 +18,7 @@ Configuration ConfigureWAP
         [String]$AdfsSiteName
     )
 
-    Import-DscResource -ModuleName PSDesiredStateConfiguration, ComputerManagementDsc, NetworkingDsc, xPSDesiredStateConfiguration, CertificateDsc
+    Import-DscResource -ModuleName PSDesiredStateConfiguration, ComputerManagementDsc, NetworkingDsc, xPSDesiredStateConfiguration
     [String] $DomainNetbiosName = (Get-NetBIOSName -DomainFQDN $DomainFQDN)
     $Interface = Get-NetAdapter | Where-Object Name -Like "Ethernet*" | Select-Object -First 1
     $InterfaceAlias = $($Interface.Name)
@@ -93,27 +93,24 @@ Configuration ConfigureWAP
             {
                 $Cred = $using:DomainAdminCredsQualified
                 $PathToCert = "$using:CertPath\*.pfx"
-                $SiteCertFile = Get-ChildItem -Path $PathToCert | Select-Object -First 1
-                $SiteCert = Get-PfxCertificate -FilePath $SiteCertFile.FullName -Password $Cred.Password 
+                $CertFiles = Get-ChildItem -Path $PathToCert
+                foreach ($CertFile in $CertFiles)
+                {
+                    $CertPath = $CertFile.FullName
+                    Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
+                }
 
-                # $CertFiles = Get-ChildItem -Path $PathToCert
-                # foreach ($CertFile in $CertFiles)
-                # {
-                #     $CertPath = $CertFile.FullName
-                #     Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
-                # }
+                $PathToCert = "$using:CertPath\*.cer"
+                $CertFiles = Get-ChildItem -Path $PathToCert
+                foreach ($CertFile in $CertFiles)
+                {
+                    $CertPath = $CertFile.FullName
+                    Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
+                }
 
-                # $PathToCert = "$using:CertPath\*.cer"
-                # $CertFiles = Get-ChildItem -Path $PathToCert
-                # foreach ($CertFile in $CertFiles)
-                # {
-                #     $CertPath = $CertFile.FullName
-                #     Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
-                # }
-
-                # $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
-                # $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
-                # Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
+                $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
+                $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
+                Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
             }
             GetScript =  
             {
@@ -126,16 +123,6 @@ Configuration ConfigureWAP
                return $false
             }
             DependsOn = "[WindowsFeature]WebAppProxy", "[DnsServerAddress]DnsServerAddress", "[File]CopyCert"
-        }
-
-        PfxImport SiteCert
-        {
-            Thumbprint = "$SiteCert.Thumbprint"
-            Path = "$SiteCert.FullName"
-            Location = "LocalMachine"
-            Store = "My"
-            Credential = $DomainAdminCreds
-            DependsOn = "[xScript]ImportCertificateAndInstallWAP"
         }
     }
 }
