@@ -130,8 +130,8 @@ Configuration ConfigureWAP
 
         PfxImport SiteCert
         {
-            Thumbprint = $SiteCert.Thumbprint
-            Path = $SiteCert.FullName
+            Thumbprint = "$SiteCert.Thumbprint"
+            Path = "$SiteCert.FullName"
             Location = "LocalMachine"
             Store = "My"
             Credential = $DomainAdminCreds
