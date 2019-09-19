@@ -41,7 +41,7 @@
             "name": "[variables('addressName')]",
             "location": "[parameters('location')]",
             "properties": {
-                "publicIPAllocationMethod": "[parameters('allocationMethod']",
+                "publicIPAllocationMethod": "[parameters('allocationMethod')]",
                 "dnsSettings": {
                     "domainNameLabel": "[parameters('dnsPrefix')]"
                 }
