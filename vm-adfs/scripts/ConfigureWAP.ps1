@@ -96,6 +96,7 @@ Configuration ConfigureWAP
                 $CertFiles = Get-ChildItem -Path $PathToCert
                 foreach ($CertFile in $CertFiles)
                 {
+                    Write-Verbose -Message "Importing root certificate..."
                     $CertPath = $CertFile.FullName
                     Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
                 }
@@ -104,6 +105,7 @@ Configuration ConfigureWAP
                 $CertFiles = Get-ChildItem -Path $PathToCert
                 foreach ($CertFile in $CertFiles)
                 {
+                    Write-Verbose -Message "Importing certificate..."
                     $CertPath = $CertFile.FullName
                     Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
                 }
