@@ -297,13 +297,6 @@ configuration ConfigureADFS
             SetScript = 
             {
                 $destinationPath = "C:\Cert"
-                # $adfsSigningCertName = "ADFS Signing.cer"
-                # $adfsSigningIssuerCertName = "ADFS Signing Issuer.cer"
-                # Write-Verbose -Message "Exporting public key of ADFS signing / signing issuer certificates..."
-                # $signingCert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName "$using:AdfsSiteName.Signing"
-                # $signingCert | Export-Certificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSigningCertName))
-                # Get-ChildItem -Path "cert:\LocalMachine\Root\" | Where-Object {$_.Subject -eq  $signingCert.Issuer} | Select-Object -First 1 | Export-Certificate -FilePath ([System.IO.Path]::Combine($destinationPath, $adfsSigningIssuerCertName))
-                # Write-Verbose -Message "Public key of ADFS signing / signing issuer certificates successfully exported"
                 $adfsSiteCertName = "ADFS Site.pfx"
                 $adfsSiteIssuerCertName = "ADFS Site Issuer.cer"
                 Write-Verbose -Message "Exporting ADFS site / issuer certificates..."
@@ -323,6 +316,26 @@ configuration ConfigureADFS
                return $false
             }
             DependsOn = "[WindowsFeature]AddADFS", "[SmbShare]CertShare"
+        }
+
+        xScript EnableSignonPage
+        {
+            SetScript = 
+            {
+                Set-AdfsProperties –EnableIdpInitiatedSignonPage $true
+                Write-Verbose -Message "Enabled signon page..."
+            }
+            GetScript =  
+            {
+                # This block must return a hashtable. The hashtable must only contain one key Result and the value must be of type String.
+                return @{ "Result" = "false" }
+            }
+            TestScript = 
+            {
+                # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
+               return $false
+            }
+            DependsOn = "[xScript]ExportCertificates"
         }
 
         cADFSFarm CreateADFSFarm

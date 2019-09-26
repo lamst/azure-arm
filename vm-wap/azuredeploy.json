@@ -1,0 +1,331 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the administrator account of the new VM"
+            }
+        },
+        "adminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "The password for the administrator account of the new VM"
+            }
+        },
+        "domainName": {
+            "type": "string",
+            "metadata": {
+                "description": "The FQDN of the Active Directory Domain to be created"
+            }
+        },
+        "vmName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the VM."
+            },
+            "defaultValue": "mcw-wap1"
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_D2s_v3",
+            "metadata": {
+                "description": "Size of the VM for the controller"
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "vnet",
+            "metadata": {
+                "description": "The name of the new or existing virtual network."
+            }
+        },
+        "virtualNetworkAddressRange": {
+            "type": "string",
+            "metadata": {
+                "description": "The address range of the new VNET in CIDR format."
+            },
+            "defaultValue": "10.0.0.0/16"
+        },
+        "wapSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the subnet containing the WAP."
+            }
+        },
+        "wapSubnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The address range of the subnet in the virtual network."
+            },
+            "defaultValue": "10.0.2.0/24"
+        },
+        "wapLBName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the load balancer for the WAP farm"
+            },
+            "defaultValue": "wap-elb"
+        },
+        "wapLBFrontEndIPAddress": {
+            "type": "string",
+            "metadata": {
+                "description": "The IP address of the front end of the load balancer for the WAP"
+            },
+            "defaultValue": "10.0.2.4"
+        },
+        "dnsServer": {
+            "type": "string",
+            "defaultValue": "10.0.0.4",
+            "metadata": {
+                "description": "The IP address of the DNS server."
+            }
+        },
+        "adfsSiteName": {
+            "type": "string",
+            "defaultValue": "fs1",
+            "metadata": {
+                "description": "The name of the ADFS server."
+            }
+        },
+        "caName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the certificate authority."
+            }
+        },
+        "wapLBProbeName": {
+            "type": "string",
+            "defaultValue": "wap-prob",
+            "metadata": {
+                "description": "The name of the WAP health probe."
+            }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of resources, such as templates and DSC modules, that the template depends on."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Auto-generated token to access _artifactsLocation."
+            },
+            "defaultValue": ""
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
+    },
+    "variables": {
+        "wapNicName": "[concat(parameters('vmName'), '-nic-', substring(uniqueString(resourceGroup().id), 0, 6))]",
+        "wapAvailabilitySetName": "wap-as",
+        "wapLBFrontEnd": "wap-lb-fe",
+        "wapLBBackEnd": "wap-lb-be",
+        "wapLBRdpRule": "wap-lb-inbound-rdp",
+        "publicIPAddressName": "pwc-wap-pip",
+        "publicIPDnsPrefix": "pwc-wap"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-05-01",
+            "name": "[variables('wapAvailabilitySetName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('as-template/new-as.json', parameters('_artifactsLocationSasToken')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "availabilitySetName": {
+                        "value": "[variables('wapAvailabilitySetName')]"
+                    },
+                    "faultDomainCount": {
+                        "value": 2
+                    },
+                    "updateDomainCount": {
+                        "value": 20
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-05-01",
+            "name": "vnet",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('vnet-template/snet.json', parameters('_artifactsLocationSasToken')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "subnetName": {
+                        "value": "[parameters('wapSubnetName')]"
+                    },
+                    "subnetRange": {
+                        "value": "[parameters('wapSubnetAddressPrefix')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-05-01",
+            "name": "pip",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('ip/public.json', parameters('_artifactsLocationSasToken')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "addressName": {
+                        "value": "[variables('publicIPAddressName')]"
+                    },
+                    "dnsPrefix": {
+                        "value": "[variables('publicIPDnsPrefix')]"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2019-04-01",
+            "name": "[variables('wapNicName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "vnet",
+                "pip"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAllocationMethod": "Static",
+                            "privateIPAddress": "[parameters('wapLBFrontEndIPAddress')]",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('wapSubnetName'))]"
+                            },
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPAddressName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-03-01",
+            "name": "[parameters('vmName')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[variables('wapNicName')]",
+                "[variables('wapAvailabilitySetName')]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('wapAvailabilitySetName'))]"
+                },
+                "osProfile": {
+                    "computerName": "[parameters('vmName')]",
+                    "adminUsername": "[parameters('adminUsername')]",
+                    "adminPassword": "[parameters('adminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "name": "[concat(parameters('vmName'), '-osdisk-', substring(uniqueString(resourceGroup().id), 0, 6))]",
+                        "caching": "ReadOnly",
+                        "createOption": "FromImage",
+                        "managedDisk": {
+                            "storageAccountType": "StandardSSD_LRS"
+                        }
+                    },
+                    "dataDisks": [
+                        {
+                            "name": "[concat(parameters('vmName'), '-datadisk-', substring(uniqueString(resourceGroup().id), 0, 6))]",
+                            "caching": "ReadWrite",
+                            "createOption": "Empty",
+                            "diskSizeGB": 20,
+                            "managedDisk": {
+                                "storageAccountType": "StandardSSD_LRS"
+                            },
+                            "lun": 0
+                        }
+                    ]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('wapNicName'))]"
+                        }
+                    ]
+                }
+            },
+            "resources": [
+                {
+                    "type": "extensions",
+                    "apiVersion": "2019-03-01",
+                    "name": "ConfigureWAP",
+                    "location": "[parameters('location')]",
+                    "dependsOn": [
+                        "[parameters('vmName')]"
+                    ],
+                    "properties": {
+                        "publisher": "Microsoft.Powershell",
+                        "type": "DSC",
+                        "typeHandlerVersion": "2.19",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                            "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('vm-adfs/scripts/ConfigureWAP.zip', parameters('_artifactsLocationSasToken')))]",
+                            "ConfigurationFunction": "ConfigureWAP.ps1\\ConfigureWAP",
+                            "Properties": {
+                                "DomainAdminCreds": {
+                                    "UserName": "[parameters('adminUsername')]",
+                                    "Password": "PrivateSettingsRef:AdminPassword"
+                                },
+                                "DNSServer": "[parameters('dnsServer')]",
+                                "CAName": "[parameters('caName')]",
+                                "DomainFQDN": "[parameters('domainName')]",
+                                "AdfsSiteName": "[parameters('adfsSiteName')]"
+                            }
+                        },
+                        "protectedSettings": {
+                            "Items": {
+                                "AdminPassword": "[parameters('adminPassword')]"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
