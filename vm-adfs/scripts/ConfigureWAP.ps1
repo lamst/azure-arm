@@ -85,6 +85,7 @@ Configuration ConfigureWAP
             Recurse = $true
             Ensure = "Present"
             Credential = $DomainAdminCredsQualified
+            DependsOn = "[DnsServerAddress]DnsServerAddress"
         }
 
         xScript ImportCertificateAndInstallWAP 
