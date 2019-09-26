@@ -93,6 +93,14 @@ Configuration ConfigureWAP
             SetScript = 
             {
                 $Cred = $using:DomainAdminCredsQualified
+                $PathToCert = "$using:CertPath\*.*"
+                $CertFiles = Get-ChildItem -Path $PathToCert
+                foreach ($CertFile in $CertFiles)
+                {
+                    Write-Verbose -Message "Certificate: $CertFile.FullName"
+                }
+
+
                 $PathToCert = "$using:CertPath\*.cer"
                 $CertFiles = Get-ChildItem -Path $PathToCert
                 foreach ($CertFile in $CertFiles)
