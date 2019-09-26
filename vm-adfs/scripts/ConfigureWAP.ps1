@@ -100,10 +100,6 @@ Configuration ConfigureWAP
                     $CertPath = $CertFile.FullName
                     Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
                 }
-                
-                # $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
-                # $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
-                # Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
             }
             GetScript =  
             {
@@ -143,6 +139,27 @@ Configuration ConfigureWAP
                return $false
             }
             DependsOn = "[xScript]ImportRootCertificate", "[File]CopyCert"
+        }
+
+        xScript InstallWAP 
+        {
+            SetScript = 
+            {
+                $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
+                $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
+                Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
+            }
+            GetScript =  
+            {
+                # This block must return a hashtable. The hashtable must only contain one key Result and the value must be of type String.
+                return @{ "Result" = "false" }
+            }
+            TestScript = 
+            {
+                # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
+               return $false
+            }
+            DependsOn = "[WindowsFeature]WebAppProxy", "[xScript]ImportCertificate", "[xScript]ImportRootCertificate"
         }
     }
 }
