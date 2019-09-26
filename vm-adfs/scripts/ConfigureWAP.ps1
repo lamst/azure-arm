@@ -88,19 +88,10 @@ Configuration ConfigureWAP
             DependsOn = "[DnsServerAddress]DnsServerAddress"
         }
 
-        xScript ImportCertificateAndInstallWAP 
+        xScript ImportRootCertificate 
         {
             SetScript = 
             {
-                $Cred = $using:DomainAdminCredsQualified
-                $PathToCert = "$using:CertPath\*.*"
-                $CertFiles = Get-ChildItem -Path $PathToCert
-                foreach ($CertFile in $CertFiles)
-                {
-                    Write-Verbose -Message "Certificate: $CertFile.FullName"
-                }
-
-
                 $PathToCert = "$using:CertPath\*.cer"
                 $CertFiles = Get-ChildItem -Path $PathToCert
                 foreach ($CertFile in $CertFiles)
@@ -110,15 +101,6 @@ Configuration ConfigureWAP
                     Import-Certificate -CertStoreLocation "cert:\LocalMachine\Root\" -FilePath $CertPath
                 }
                 
-                $PathToCert = "$using:CertPath\*.pfx"
-                $CertFiles = Get-ChildItem -Path $PathToCert
-                foreach ($CertFile in $CertFiles)
-                {
-                    Write-Verbose -Message "Importing certificate..."
-                    $CertPath = $CertFile.FullName
-                    Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
-                }
-
                 # $Subject = "$using:AdfsSiteName.$using:DomainFQDN"
                 # $Cert = Get-ChildItem -Path "cert:\LocalMachine\My\" -DnsName $Subject
                 # Install-WebApplicationProxy -FederationServiceTrustCredential $using:DomainAdminCreds -CertificateThumbprint $Cert.Thumbprint -FederationServiceName $Subject
@@ -133,7 +115,34 @@ Configuration ConfigureWAP
                 # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
                return $false
             }
-            DependsOn = "[WindowsFeature]WebAppProxy", "[DnsServerAddress]DnsServerAddress", "[File]CopyCert"
+            DependsOn = "[WindowsFeature]WebAppProxy", "[File]CopyCert"
+        }
+
+        xScript ImportCertificate 
+        {
+            SetScript = 
+            {
+                $Cred = $using:DomainAdminCredsQualified
+                $PathToCert = "$using:CertPath\*.pfx"
+                $CertFiles = Get-ChildItem -Path $PathToCert
+                foreach ($CertFile in $CertFiles)
+                {
+                    Write-Verbose -Message "Importing certificate..."
+                    $CertPath = $CertFile.FullName
+                    Import-PfxCertificate -Exportable -Password $Cred.Password -CertStoreLocation "cert:\LocalMachine\My\" -FilePath $CertPath
+                }
+            }
+            GetScript =  
+            {
+                # This block must return a hashtable. The hashtable must only contain one key Result and the value must be of type String.
+                return @{ "Result" = "false" }
+            }
+            TestScript = 
+            {
+                # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
+               return $false
+            }
+            DependsOn = "[xScript]ImportRootCertificate", "[File]CopyCert"
         }
     }
 }
