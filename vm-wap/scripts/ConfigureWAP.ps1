@@ -27,7 +27,8 @@ Configuration ConfigureWAP
 
     Node localhost
     {
-        LocalConfigurationManager {            
+        LocalConfigurationManager 
+        {            
             DebugMode          = 'All'
             ActionAfterReboot  = 'ContinueConfiguration'            
             ConfigurationMode  = 'ApplyOnly'            
