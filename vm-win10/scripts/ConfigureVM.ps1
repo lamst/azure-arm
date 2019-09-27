@@ -6,9 +6,6 @@ configuration ConfigureVM
         [System.Management.Automation.PSCredential]$DomainAdminCreds,
 
         [Parameter(Mandatory)] 
-        [String]$DNSServer,
-
-        [Parameter(Mandatory)] 
         [String]$DomainFQDN,
 
         [Int]$RetryCount = 20,
