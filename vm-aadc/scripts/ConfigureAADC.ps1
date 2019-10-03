@@ -131,5 +131,51 @@ configuration ConfigureAADC
             }
             DependsOn="[Computer]DomainJoin"
         }
+
+        #**********************************************************
+        # Download AADC
+        #**********************************************************
+        xScript DownloadAADC 
+        {
+            SetScript = 
+            {
+                $Url = "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi"
+                $Output = "C:\Users\$using:UserName\Downloads\AzureADConnect.msi"
+                Invoke-WebRequest -Uri $Url -OutFile $Output
+            }
+            GetScript =  
+            {
+                # This block must return a hashtable. The hashtable must only contain one key Result and the value must be of type String.
+                return @{ "Result" = "false" }
+            }
+            TestScript = 
+            {
+                # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
+               return $false
+            }
+        }
+    }
+}
+
+function Get-NetBIOSName {
+    [OutputType([string])]
+    param(
+        [string]$DomainFQDN
+    )
+
+    if ($DomainFQDN.Contains('.')) {
+        $length = $DomainFQDN.IndexOf('.')
+        if ( $length -ge 16) {
+            $length = 15
+        }
+        return $DomainFQDN.Substring(0, $length)
+    }
+    else {
+        if ($DomainFQDN.Length -gt 15) {
+            return $DomainFQDN.Substring(0, 15)
+        }
+        else {
+            return $DomainFQDN
+        }
     }
 }
