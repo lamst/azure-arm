@@ -21,6 +21,7 @@ configuration ConfigureAADC
     $UserName = $DomainAdminCreds.UserName
     $InterfaceAlias = $($Interface.Name)
     [System.Management.Automation.PSCredential] $DomainAdminCredsQualified = New-Object System.Management.Automation.PSCredential ("${DomainNetbiosName}\$($DomainAdminCreds.UserName)", $DomainAdminCreds.Password)
+    [String] $ComputerName = Get-Content env:computername
     
     Node localhost
     {
