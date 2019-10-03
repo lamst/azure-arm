@@ -129,18 +129,25 @@ configuration ConfigureAADC
                     return $false
                 }
             }
-            DependsOn="[Computer]DomainJoin"
+            DependsOn = "[Computer]DomainJoin"
         }
 
         #**********************************************************
         # Download AADC
         #**********************************************************
+        File DownloadFolder
+        {
+            DestinationPath = "C:\Downloads"
+            Type = "Directory"
+            Ensure = "Present"
+        }
+
         xScript DownloadAADC 
         {
             SetScript = 
             {
                 $Url = "https://download.microsoft.com/download/B/0/0/B00291D0-5A83-4DE7-86F5-980BC00DE05A/AzureADConnect.msi"
-                $Output = "C:\Users\$using:UserName\Downloads\AzureADConnect.msi"
+                $Output = "C:\Downloads\AzureADConnect.msi"
                 Invoke-WebRequest -Uri $Url -OutFile $Output
             }
             GetScript =  
@@ -153,6 +160,7 @@ configuration ConfigureAADC
                 # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
                return $false
             }
+            DependsOn = "[File]DownloadFolder"
         }
     }
 }
