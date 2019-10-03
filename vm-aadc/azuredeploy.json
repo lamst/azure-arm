@@ -85,10 +85,37 @@
     },
     "variables": {
         "serverNicName": "[concat(parameters('vmName'), '-nic-', substring(uniqueString(resourceGroup().id), 0, 6))]",
+        "serverAvailabilitySetName": "aadc-as",
         "publicIPAddressName": "pwc-aadc-pip",
         "publicIPDnsPrefix": "pwc-aadc1"
     },
     "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2019-05-01",
+            "name": "[variables('serverAvailabilitySetName')]",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('as-template/new-as.json', parameters('_artifactsLocationSasToken')))]",
+                    "contentVersion": "1.0.0.0"
+                },
+                "parameters": {
+                    "availabilitySetName": {
+                        "value": "[variables('serverAvailabilitySetName')]"
+                    },
+                    "faultDomainCount": {
+                        "value": 2
+                    },
+                    "updateDomainCount": {
+                        "value": 20
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
         {
             "type": "Microsoft.Resources/deployments",
             "apiVersion": "2019-05-01",
@@ -167,11 +194,15 @@
             "name": "[parameters('vmName')]",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[variables('serverNicName')]"
+                "[variables('serverNicName')]",
+                "[variables('serverAvailabilitySetName')]"
             ],
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[parameters('vmSize')]"
+                },
+                "availabilitySet": {
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('serverAvailabilitySetName'))]"
                 },
                 "osProfile": {
                     "computerName": "[parameters('vmName')]",
@@ -221,7 +252,7 @@
                         "typeHandlerVersion": "2.19",
                         "autoUpgradeMinorVersion": true,
                         "settings": {
-                            "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('vm-adfs/scripts/ConfigureAADC.zip', parameters('_artifactsLocationSasToken')))]",
+                            "ModulesUrl": "[uri(parameters('_artifactsLocation'), concat('vm-aadc/scripts/ConfigureAADC.zip', parameters('_artifactsLocationSasToken')))]",
                             "ConfigurationFunction": "ConfigureAADC.ps1\\ConfigureAADC",
                             "Properties": {
                                 "DomainAdminCreds": {
