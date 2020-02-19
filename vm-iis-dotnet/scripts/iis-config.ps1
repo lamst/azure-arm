@@ -11,13 +11,24 @@ Configuration ConfigureWebServer
         }
 
         #**********************************************************
-        # Download and install .NET Core Hosting Bundle
+        # Download .NET Core Hosting Bundle
+        #**********************************************************
+        File DownloadFolder
+        {
+            DestinationPath = "C:\Downloads"
+            Type = "Directory"
+            Ensure = "Present"
+        }
+
+        #**********************************************************
+        # Install .NET Core Hosting Bundle
         #**********************************************************
         xRemoteFile DownloadDotNetCoreHostingBundle 
         {
             Uri = "https://download.visualstudio.microsoft.com/download/pr/5a059308-c27a-4223-b04d-0e815dce2cd0/10f528c237fed56192ea22283d81c409/dotnet-hosting-2.1.16-win.exe"
-            DestinationPath = "C:\temp\dnhosting.exe"
+            DestinationPath = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
             MatchSource = $false
+            DependsOn = "[File]DownloadFolder"
         }
 
         xPackage InstallDotNetCoreHostingBundle 
@@ -25,7 +36,7 @@ Configuration ConfigureWebServer
             Name = "Microsoft ASP.NET Core Module"
             ProductId = ""
             Arguments = "/quiet /norestart /log C:\temp\dnhosting_install.log"
-            Path = "C:\temp\dnhosting.exe"
+            Path = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
             DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetCoreHostingBundle"
         }
     }

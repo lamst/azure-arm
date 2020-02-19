@@ -27,12 +27,6 @@
                 "description": "The size of the VM."
             }
         },
-        "imageName": {
-            "type": "string",
-            "metadata": {
-                "description": "The name of the image the virtual machine to base on."
-            }
-        },
         "imageResourceGroup": {
             "type": "string",
             "defaultValue": "[resourceGroup().name]",
@@ -96,8 +90,7 @@
     },
     "variables": {
         "templateBaseUrl": "https://raw.githubusercontent.com/lamst/azure-arm/master/",
-        "moduleName": "iis-config",
-        "imageId": "[resourceId(parameters('imageResourceGroup'), 'Microsoft.Compute/images/', parameters('imageName'))]"
+        "moduleName": "iis-config"
     },
     "resources": [{
             "apiVersion": "2015-01-01",
@@ -179,7 +172,10 @@
                 },
                 "storageProfile": {
                     "imageReference": {
-                        "id": "[variables('imageId')]"
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
                     },
                     "osDisk": {
                         "name": "[concat(parameters('vmName'), '-osdisk')]",
@@ -199,20 +195,20 @@
         },
         {
             "type": "Microsoft.Compute/virtualMachines/extensions",
-            "apiVersion": "2018-06-01",
+            "apiVersion": "2019-03-01",
             "name": "[concat(parameters('vmName'), '/config-iis-ext')]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
                 "[resourceId('Microsoft.Compute/virtualMachines', parameters('vmName'))]"
             ],
             "properties": {
-                "publisher": "Microsoft.Azure.Extensions",
+                "publisher": "Microsoft.Powershell",
                 "type": "DSC",
-                "typeHandlerVersion": "2.76",
+                "typeHandlerVersion": "2.77",
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
                     "configuration": {
-                        "url": "[concat(variables('templateBaseUrl'), 'vm-jenkins/scripts/', variables('moduleName'), '.zip')]",
+                        "url": "[concat(variables('templateBaseUrl'), 'vm-iis-dotnet/scripts/', variables('moduleName'), '.zip')]",
                         "script": "[concat(variables('moduleName'), '.ps1')]"
                     }
                 }
