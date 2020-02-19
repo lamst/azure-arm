@@ -35,7 +35,7 @@ Configuration ConfigureWebServer
         {
             Name = "Microsoft ASP.NET Core Module"
             ProductId = ""
-            Arguments = "/quiet /norestart /log C:\temp\dnhosting_install.log"
+            Arguments = "/quiet /norestart /log C:\Downloads\dotnet-hosting-install.log"
             Path = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
             DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetCoreHostingBundle"
         }
