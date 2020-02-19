@@ -2,7 +2,7 @@ Configuration ConfigureWebServer
 {
     Import-DscResource -ModuleName xPSDesiredStateConfiguration
 
-    node ("localhost")
+    node localhost
     {
         WindowsFeature InstallWebServer
         {
@@ -29,15 +29,6 @@ Configuration ConfigureWebServer
             DestinationPath = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
             MatchSource = $false
             DependsOn = "[File]DownloadFolder"
-        }
-
-        xPackage InstallDotNetCoreHostingBundle 
-        {
-            Name = "Microsoft ASP.NET Core Module"
-            ProductId = ""
-            Arguments = "/quiet /norestart /log C:\Downloads\dotnet-hosting-install.log"
-            Path = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
-            DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetCoreHostingBundle"
         }
     }
 }
