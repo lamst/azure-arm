@@ -14,6 +14,24 @@
                 "description": "Password of the administrator."
             }
         },
+        "domainAdminUsername": {
+            "type": "string",
+            "metadata": {
+                "description": "User name of the domain administrator."
+            }
+        },
+        "domainAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password of the domain administrator"
+            }
+        },
+        "domainName": {
+            "type": "string",
+            "metadata": {
+                "description": "The FQDN of the Active Directory Domain to be created"
+            }
+        },
         "vmName": {
             "type": "string",
             "metadata": {
@@ -22,7 +40,7 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_DS2_v2",
+            "defaultValue": "Standard_D4s_v3",
             "metadata": {
                 "description": "The size of the VM."
             }
@@ -153,7 +171,7 @@
             }
         },
         {
-            "apiVersion": "2019-07-01",
+            "apiVersion": "2019-03-01",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('vmName')]",
             "location": "[resourceGroup().location]",
@@ -173,7 +191,7 @@
                 "storageProfile": {
                     "imageReference": {
                         "publisher": "MicrosoftSQLServer",
-                        "offer": "SQL2016SP1-WS2016-BYOL",
+                        "offer": "SQL2017-WS2016",
                         "sku": "Enterprise",
                         "version": "latest"
                     },
@@ -188,15 +206,7 @@
                     "dataDisks":[
                         {
                             "lun": 0,
-                            "createOption": "Empty",
-                            "caching": "None",
-                            "managedDisk": {
-                                "storageAccountType": "Premium_LRS"
-                            },
-                            "diskSizeGB": 1024
-                        },
-                        {
-                            "lun": 1,
+                            "name": "[concat(parameters('vmName'), '-ddisk1')]",
                             "createOption": "Empty",
                             "caching": "None",
                             "managedDisk": {
@@ -232,7 +242,19 @@
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
                     "modulesUrl": "[concat(variables('templateBaseUrl'), 'vm-sql/scripts/', variables('moduleName'), '.zip')]",
-                    "configurationFunction": "[concat(variables('moduleName'), '.ps1', '\\ConfigureWebServer')]"
+                    "configurationFunction": "[concat(variables('moduleName'), '.ps1', '\\ConfigureSqlServer')]",
+                    "Properties": {
+                        "DomainAdminCreds": {
+                            "UserName": "[parameters('adminUsername')]",
+                            "Password": "PrivateSettingsRef:DomainAdminPassword"
+                        },
+                        "DomainFQDN": "[parameters('domainName')]"
+                    }
+                },
+                "protectedSettings": {
+                    "Items": {
+                        "DomainAdminPassword": "[parameters('domainAdminPassword')]"
+                    }
                 }
             }
         }

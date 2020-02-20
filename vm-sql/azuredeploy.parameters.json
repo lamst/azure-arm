@@ -8,6 +8,15 @@
         "adminPassword": {
             "value": ""
         },
+        "domainAdminUsername": {
+            "value": ""
+        },
+        "domainAdminPassword": {
+            "value": ""
+        },
+        "domainName": {
+            "value" : ""
+        },
         "vmName": {
             "value": ""
         },
