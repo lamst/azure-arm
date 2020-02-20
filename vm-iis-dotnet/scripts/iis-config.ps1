@@ -83,14 +83,5 @@ Configuration ConfigureWebServer
             MatchSource = $false
             DependsOn = "[File]DownloadFolder"
         }
-
-        xPackage InstallDotNetFramework 
-        {
-            Name = "Microsoft .NET Framework 4.7.2"
-            ProductId = ""
-            Arguments = "/quiet /norestart /log C:\Downloads\dotnet-framework-install.log"
-            Path = "C:\Downloads\dotnet-framework-4.7.2.exe"
-            DependsOn = "[xRemoteFile]DownloadDotNetFramework"
-        }
     }
 }

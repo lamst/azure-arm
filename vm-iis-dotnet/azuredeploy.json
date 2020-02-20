@@ -190,7 +190,8 @@
                 },
                 "availabilitySet": {
                     "id": "[reference('as-template').outputs.availabilitySetRef.value]"
-                }
+                },
+                "licenseType": "Windows_Server"
             }
         },
         {
