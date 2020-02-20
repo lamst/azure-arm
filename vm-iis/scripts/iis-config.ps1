@@ -1,11 +1,17 @@
 Configuration ConfigureWebServer
 {
-    node ("localhost")
+    node localhost
     {
         WindowsFeature InstallWebServer
         {
             Ensure = "Present"
-            Name = "Web Server"
+            Name = "Web-Server"
+        }
+
+        WindowsFeature InstallManagementTools
+        {
+            Ensure = "Present"
+            Name = "Web-Mgmt-Tools"
         }
     }
 }

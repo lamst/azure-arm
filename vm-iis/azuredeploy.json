@@ -211,10 +211,8 @@
                 "typeHandlerVersion": "2.76",
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
-                    "configuration": {
-                        "url": "[concat(variables('templateBaseUrl'), 'vm-iis/scripts/', variables('moduleName'), '.zip')]",
-                        "script": "[concat(variables('moduleName'), '.ps1')]"
-                    }
+                    "modulesUrl": "[concat(variables('templateBaseUrl'), 'vm-iis-dotnet/scripts/', variables('moduleName'), '.zip')]",
+                    "configurationFunction": "[concat(variables('moduleName'), '.ps1', '\\ConfigureWebServer')]"
                 }
             }
         }
