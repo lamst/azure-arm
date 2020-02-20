@@ -34,7 +34,7 @@ Configuration ConfigureWebServer
         xPackage InstallDotNetCoreHostingBundle 
         {
             Name = "Microsoft ASP.NET Core Module"
-            ProductId = "33E08F6D-31B5-462C-8DD1-335DA8A88B91"
+            ProductId = ""
             Arguments = "/quiet /norestart /log C:\Downloads\dotnet-hosting-install.log"
             Path = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
             DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetCoreHostingBundle"
