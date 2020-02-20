@@ -37,6 +37,15 @@
         },
         "newOrExistingAvailabilitySetName": {
             "value": ""
+        },
+        "keyVaultResourceGroupName": {
+            "value": ""
+        },
+        "keyVaultName": {
+            "value": ""
+        },
+        "keyVaultSecretUrl": {
+            "value": ""
         }
     }
 }
