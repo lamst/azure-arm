@@ -72,16 +72,5 @@ Configuration ConfigureWebServer
             Path = "C:\Downloads\BuildTools_Full.exe"
             DependsOn = "[xRemoteFile]DownloadBuildTools"
         }
-
-        #**********************************************************
-        # Install .NET Framework 4.7.2
-        #**********************************************************
-        xRemoteFile DownloadDotNetFramework 
-        {
-            Uri = "https://go.microsoft.com/fwlink/?LinkID=863265"
-            DestinationPath = "C:\Downloads\dotnet-framework-4.7.2.exe"
-            MatchSource = $false
-            DependsOn = "[File]DownloadFolder"
-        }
     }
 }
