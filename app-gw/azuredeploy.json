@@ -124,7 +124,7 @@
                 "description": "The address range of the subnet in the virtual network."
             }
         },        
-        "publicDnsPrefix": {
+        "publicIPDnsPrefix": {
             "type": "string",
             "metadata": {
                 "description": "The DNS prefix of the public IP to associate with the front end of the Application Gateway"
