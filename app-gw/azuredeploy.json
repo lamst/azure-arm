@@ -228,7 +228,7 @@
                         "name": "appGatewayIpConfig",
                         "properties": {
                             "subnet": {
-                                "id": "[variables('subnetRef')]"
+                                "id": "[variables('appGatewaySubnetRef')]"
                             }
                         }
                     }
