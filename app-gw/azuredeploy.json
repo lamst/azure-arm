@@ -141,6 +141,17 @@
             ],
             "defaultValue": "Standard"
         },
+        "pubicIpAddressAllocationMethod": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the allocation method for the IP address."
+            },
+            "allowedValues": [
+                "Dynamic",
+                "Static"
+            ],
+            "defaultValue": "Static"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -186,6 +197,9 @@
                     },
                     "dnsPrefix": {
                         "value": "[parameters('publicIPDnsPrefix')]"
+                    },
+                    "allocationMethod": {
+                        "value": "[parameters('pubicIpAddressAllocationMethod')]"
                     },
                     "sku": {
                         "value": "[parameters('publicIpAddressSku')]"
