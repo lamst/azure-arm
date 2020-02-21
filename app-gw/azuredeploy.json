@@ -178,7 +178,7 @@
         "publicIPAddressName": "[concat(parameters('appGatewayName'), '-pip')]",
         "publicIPAddressRef": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIPAddressName'))]",
         "appGatewaySubnetRef": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('appGatewaySubnetName'))]",
-        "appGatewayId": "[resourceId('Microsoft.Network/applicationGateways', parameters('appGatewayName'))]"
+        "appGatewayId": "[resourceId('Microsoft.Network/applicationGateways/', parameters('appGatewayName'))]"
     },
     "resources": [
         {

@@ -269,7 +269,7 @@
                     "resources": [
                         {
                             "name": "[parameters('backendVmNicName')]",
-                            "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Network/networkInterfaces', parameters('backendVmNicName'))]",
+                            "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Network/networkInterfaces/', parameters('backendVmNicName'))]",
                             "type": "Microsoft.Network/networkInterfaces",
                             "apiVersion": "2019-07-01",
                             "location": "[parameters('backendVmNicLocation')]",
@@ -280,18 +280,18 @@
                                         "properties": {
                                             "privateIPAllocationMethod": "Dynamic",
                                             "subnet": {
-                                                "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('backendVmVirtualNetworkName'), '/subnets/', parameters('backendVmSubnetName'))]"
+                                                "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('backendVmVirtualNetworkName'), parameters('backendVmSubnetName'))]"
                                             },
                                             "applicationGatewayBackendAddressPools": [
                                                 {
-                                                    "id": "[resourceId('Microsoft.Network/applicationGateways', parameters('appGatewayName'), '/backendAddressPools/', parameters('appGatewayBackendAddressPoolName'))]"
+                                                    "id": "[resourceId('Microsoft.Network/applicationGateways/backendAddressPools/', parameters('appGatewayName'), parameters('appGatewayBackendAddressPoolName'))]"
                                                 }
                                             ]
                                         }
                                     }
                                 ],
                                 "virtualMachine": {
-                                    "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Compute/virtualMachines', parameters('backendVmName'))]"
+                                    "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Compute/virtualMachines/', parameters('backendVmName'))]"
                                 }
                             }
                         }
