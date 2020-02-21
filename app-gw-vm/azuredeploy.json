@@ -1,0 +1,303 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "appGatewayName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of application gateway"
+            }
+        },
+        "appGatewaySize": {
+            "type": "string",
+            "allowedValues": [
+                "WAF_Medium",
+                "WAF_Large",
+                "Standard_v2",
+                "WAF_v2"
+            ],
+            "defaultValue": "WAF_v2",
+            "metadata": {
+                "description": "Specifies the application gateway SKU name."
+            }
+        },
+        "appGatewayTier": {
+            "type": "string",
+            "allowedValues": [
+                "Standard",
+                "WAF",
+                "Standard_v2",
+                "WAF_v2"
+            ],
+            "defaultValue": "WAF_v2",
+            "metadata": {
+                "description": "Specifies the tier of the application gateway."
+            }
+        },
+        "appGatewayCapacity": {
+            "type": "int",
+            "allowedValues": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
+            ],
+            "defaultValue": 2,
+            "metadata": {
+                "description": "Specifies the number of the application gateway instances."
+            }
+        },
+        "appGatewayBackendAddressPoolName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the backend address pool."
+            }
+        },
+        "wafEnabled": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "WAF Enabled"
+            }
+        },
+        "wafMode": {
+            "type": "string",
+            "allowedValues": [
+                "Detection",
+                "Prevention"
+            ],
+            "defaultValue": "Detection",
+            "metadata": {
+                "description": "Specifies prevention mode to block intrusions and attacks that the firewall rules detect."
+            }
+        },
+        "wafRuleSetType": {
+            "type": "string",
+            "allowedValues": [
+                "OWASP"
+            ],
+            "defaultValue": "OWASP",
+            "metadata": {
+                "description": "Specifies the type of the web application firewall rule set."
+            }
+        },
+        "wafRuleSetVersion": {
+            "type": "string",
+            "allowedValues": [
+                "2.2.9",
+                "3.0"
+            ],
+            "defaultValue": "3.0",
+            "metadata": {
+                "description": "Specifies the version of the rule set type."
+            }
+        },
+        "virtualNetworkName": {
+            "type": "string",
+            "defaultValue": "vnet",
+            "metadata": {
+                "description": "The name of the new or existing virtual network."
+            }
+        },
+        "appGatewaySubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the subnet containing the Application Gateway."
+            }
+        },
+        "appGatewaySubnetAddressPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The address range of the subnet in the virtual network."
+            }
+        },        
+        "publicDnsPrefix": {
+            "type": "string",
+            "metadata": {
+                "description": "The DNS prefix of the public IP to associate with the front end of the Application Gateway"
+            }
+        },
+        "backendVmResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the resource group containing the backend virtual machine."
+            },
+            "defaultValue": "[resourceGroup().name]"
+        },
+        "backendVmName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the backend virtual machine."
+            }
+        },
+        "backendVmNicLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the location of the network interface of the backend virtual machine."
+            },
+            "defaultValue": "[resourceGroup().location]"
+        },
+        "backendVmNicName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of NIC of the backend virtual machine."
+            }
+        },
+        "backendVmNicIpConfigurationName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the IP configuration of the network interface."
+            },
+            "defaultValue": "ipconfig1"
+        },
+        "backendVmVirtualNetworkName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the virtual network containing the backend virtual machine."
+            },
+            "defaultValue": "[parameters('virtualNetworkName')]"
+        },
+        "backendVmSubnetName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the backend virtual machine subnet."
+            }
+        },
+        "_artifactsLocation": {
+            "type": "string",
+            "metadata": {
+                "description": "The location of resources, such as templates and DSC modules, that the template depends on."
+            },
+            "defaultValue": "[deployment().properties.templateLink.uri]"
+        },
+        "_artifactsLocationSasToken": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Auto-generated token to access _artifactsLocation."
+            },
+            "defaultValue": ""
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
+    },
+    "resources": [
+        {
+            "name": "appgw-template",
+            "apiVersion": "2018-05-01",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "contentVersion": "1.0.0.0",
+                    "uri": "[uri(parameters('_artifactsLocation'), concat('app-gw/azuredeploy.json', parameters('_artifactsLocationSasToken')))]"
+                },
+                "parameters": {
+                    "appGatewayName": {
+                        "value": "[parameters('appGatewayName')]"
+                    },
+                    "appGatewaySize": {
+                        "value": "[parameters('appGatewaySize')]"
+                    },
+                    "appGatewayTier": {
+                        "value": "[parameters('appGatewayTier')]"
+                    },
+                    "appGatewayCapacity": {
+                        "value": "[parameters('appGatewayCapacity')]"
+                    },
+                    "appGatewayBackendAddressPoolName": {
+                        "value": "[parameters('appGatewayBackendAddressPoolName')]"
+                    },
+                    "wafEnabled": {
+                        "value": "[parameters('wafEnabled')]"
+                    },
+                    "wafMode": {
+                        "value": "[parameters('wafMode')]"
+                    },
+                    "wafRuleSetType": {
+                        "value": "[parameters('wafRuleSetType')]"
+                    },
+                    "wafRuleSetVersion": {
+                        "value": "[parameters('wafRuleSetVersion')]"
+                    },
+                    "virtualNetworkName": {
+                        "value": "[parameters('virtualNetworkName')]"
+                    },
+                    "appGatewaySubnetName": {
+                        "value": "[parameters('appGatewaySubnetName')]"
+                    },
+                    "appGatewaySubnetAddressPrefix": {
+                        "value": "[parameters('appGatewaySubnetAddressPrefix')]"
+                    },
+                    "publicDnsPrefix": {
+                        "value": "[parameters('publicDnsPrefix')]"
+                    },
+                    "_artifactsLocation": {
+                        "value": "[parameters('_artifactsLocation')]"
+                    },
+                    "_artifactsLocationSasToken": {
+                        "value": "[parameters('_artifactsLocationSasToken')]"
+                    },
+                    "location": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "nic-template",
+            "apiVersion": "2018-05-01",
+            "type": "Microsoft.Resources/deployments",
+            "dependsOn": [
+                "[resourceId('Microsoft.Resources/deployments/', 'appgw-template')]"
+            ],
+            "properties": {
+                "mode": "Incremental",
+                "template": {
+                    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+                    "contentVersion": "1.0.0.0",
+                    "resources": [
+                        {
+                            "name": "[parameters('backendVmNicName')]",
+                            "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Network/networkInterfaces', parameters('backendVmNicName'))]",
+                            "type": "Microsoft.Network/networkInterfaces",
+                            "apiVersion": "2019-07-01",
+                            "location": "[parameters('backendVmNicLocation')]",
+                            "properties": {
+                                "ipConfigurations": [
+                                    {
+                                        "name": "[parameters('backendVmNicIpConfigurationName')]",
+                                        "properties": {
+                                            "privateIPAllocationMethod": "Dynamic",
+                                            "subnet": {
+                                                "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Network/virtualNetworks', parameters('backendVmVirtualNetworkName'), '/subnets/', parameters('backendVmSubnetName'))]"
+                                            },
+                                            "applicationGatewayBackendAddressPools": [
+                                                {
+                                                    "id": "[resourceId('Microsoft.Network/applicationGateways', parameters('appGatewayName'), '/backendAddressPools/', parameters('appGatewayBackendAddressPoolName'))]"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ],
+                                "virtualMachine": {
+                                    "id": "[resourceId(parameters('backendVmResourceGroupName'), 'Microsoft.Compute/virtualMachines', parameters('backendVmName'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ]
+}

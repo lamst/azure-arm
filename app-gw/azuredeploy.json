@@ -53,6 +53,12 @@
                 "description": "Specifies the number of the application gateway instances."
             }
         },
+        "appGatewayBackendAddressPoolName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the backend address pool."
+            }
+        },
         "wafEnabled": {
             "type": "bool",
             "defaultValue": true,
@@ -91,6 +97,13 @@
             "metadata": {
                 "description": "Specifies the version of the rule set type."
             }
+        },
+        "virtualNetworkResourceGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the name of the resource group containing the virtual network."
+            },
+            "defaultValue": "[resourceGroup().name]"
         },
         "virtualNetworkName": {
             "type": "string",
@@ -142,7 +155,7 @@
     "variables": {
         "publicIPAddressName": "[concat(parameters('appGatewayName'), '-pip')]",
         "publicIPAddressRef": "[resourceId('Microsoft.Network/publicIpAddresses', variables('publicIPAddressName'))]",
-        "appGatewaySubnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('appGatewaySubnetName')]",
+        "appGatewaySubnetRef": "[resourceId(parameters('virtualNetworkResourceGroupName'), 'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('appGatewaySubnetName'))]",
         "appGatewayId": "[resourceId('Microsoft.Network/applicationGateways', parameters('appGatewayName'))]"
     },
     "resources": [
@@ -240,7 +253,7 @@
                 ],
                 "backendAddressPools": [
                     {
-                        "name": "appGatewayBackendPool",
+                        "name": "[parameters('appGatewayBackendAddressPoolName')]",
                         "properties": {
                             "backendAddresses": []
                         }
