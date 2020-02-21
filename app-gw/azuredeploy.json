@@ -130,6 +130,17 @@
                 "description": "The DNS prefix of the public IP to associate with the front end of the Application Gateway"
             }
         },
+        "publicIpAddressSku": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the SKU of the public IP."
+            },
+            "allowedValues": [
+                "Standard",
+                "Basic"
+            ],
+            "defaultValue": "Standard"
+        },
         "_artifactsLocation": {
             "type": "string",
             "metadata": {
@@ -177,7 +188,7 @@
                         "value": "[parameters('publicIPDnsPrefix')]"
                     },
                     "sku": {
-                        "value": "Standard"
+                        "value": "[parameters('publicIpAddressSku')]"
                     },
                     "location": {
                         "value": "[parameters('location')]"

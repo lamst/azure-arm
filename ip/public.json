@@ -34,7 +34,7 @@
                 "Standard",
                 "Basic"
             ],
-            "defaultValue": "Standard"
+            "defaultValue": "Basic"
         },
         "location": {
             "type": "string",
