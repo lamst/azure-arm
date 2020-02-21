@@ -176,6 +176,9 @@
                     "dnsPrefix": {
                         "value": "[parameters('publicIPDnsPrefix')]"
                     },
+                    "sku": {
+                        "value": "Standard"
+                    },
                     "location": {
                         "value": "[parameters('location')]"
                     }

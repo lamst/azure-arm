@@ -25,6 +25,17 @@
                 "Static"
             ]
         },
+        "sku": {
+            "type": "string",
+            "metadata": {
+                "description": "Specifies the SKU of the IP address."
+            },
+            "allowedValues": [
+                "Standard",
+                "Basic"
+            ],
+            "defaultValue": "Standard"
+        },
         "location": {
             "type": "string",
             "defaultValue": "[resourceGroup().location]",
@@ -45,6 +56,9 @@
                 "dnsSettings": {
                     "domainNameLabel": "[parameters('dnsPrefix')]"
                 }
+            },
+            "sku": {
+                "name": "[parameters('sku')]"
             }
         }
     ]
