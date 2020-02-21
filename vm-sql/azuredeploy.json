@@ -219,15 +219,6 @@
                         "createOption": "FromImage",
                         "managedDisk": {
                             "storageAccountType": "StandardSSD_LRS"
-                        },
-                        "encryptionSettings": {
-                            "enabled": true,
-                            "diskEncryptionKey": {
-                                "sourceVault": {
-                                    "id": "[resourceId(parameters('keyVaultResourceGroupName'), 'Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
-                                },
-                                "secretUrl": "[parameters('keyVaultSecretUrl')]"
-                            }
                         }
                     },
                     "dataDisks":[

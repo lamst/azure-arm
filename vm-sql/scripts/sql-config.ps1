@@ -44,3 +44,26 @@ Configuration ConfigureSqlServer
         }
     }
 }
+
+function Get-NetBIOSName {
+    [OutputType([string])]
+    param(
+        [string]$DomainFQDN
+    )
+
+    if ($DomainFQDN.Contains('.')) {
+        $length = $DomainFQDN.IndexOf('.')
+        if ( $length -ge 16) {
+            $length = 15
+        }
+        return $DomainFQDN.Substring(0, $length)
+    }
+    else {
+        if ($DomainFQDN.Length -gt 15) {
+            return $DomainFQDN.Substring(0, 15)
+        }
+        else {
+            return $DomainFQDN
+        }
+    }
+}
