@@ -17,8 +17,14 @@ Configuration ConfigureWebServer
             Name = "Web-Server"
         }
 
+        WindowsFeature InstallManagementTools
+        {
+            Ensure = "Present"
+            Name = "Web-Mgmt-Tools"
+        }
+
         #**********************************************************
-        # Download .NET Core Hosting Bundle
+        # Download .NET Framework
         #**********************************************************
         File DownloadFolder
         {
@@ -28,7 +34,7 @@ Configuration ConfigureWebServer
         }
 
         #**********************************************************
-        # Install .NET Core Hosting Bundle
+        # Install .NET Framework 4.6.2
         #**********************************************************
         xRemoteFile DownloadDotNetFramework 
         {

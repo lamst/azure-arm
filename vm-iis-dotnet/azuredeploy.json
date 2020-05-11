@@ -22,7 +22,7 @@
         },
         "vmSize": {
             "type": "string",
-            "defaultValue": "Standard_D2_v3",
+            "defaultValue": "Standard_D4s_v3",
             "metadata": {
                 "description": "The size of the VM."
             }
@@ -66,11 +66,9 @@
         },
         "newOrExistingAvailabilitySet": {
             "allowedValues": [
-                "None",
                 "New",
                 "Existing"
             ],
-            "defaultValue": "None",
             "type": "string",
             "metadata": {
                 "description": "Select if this VM will be deployed in a new or an existing availability set."
@@ -78,7 +76,6 @@
         },
         "newOrExistingAvailabilitySetName": {
             "type": "string",
-            "defaultValue": "",
             "metadata": {
                 "description": "The name of the new or existing availability set."
             }
@@ -122,7 +119,6 @@
             "apiVersion": "2015-01-01",
             "name": "as-template",
             "type": "Microsoft.Resources/deployments",
-            "condition": "[greater(length(parameters('newOrExistingAvailabilitySetName')), 0)]",
             "properties": {
                 "mode": "Incremental",
                 "templateLink": {
@@ -178,7 +174,7 @@
                     "imageReference": {
                         "publisher": "MicrosoftWindowsServer",
                         "offer": "WindowsServer",
-                        "sku": "2016-Datacenter",
+                        "sku": "2012-R2-Datacenter",
                         "version": "latest"
                     },
                     "osDisk": {
