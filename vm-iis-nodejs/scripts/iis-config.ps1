@@ -48,7 +48,7 @@ Configuration ConfigureWebServer
         {
             Name = "Node.js"
             ProductId = ""
-            Arguments = "/q /norestart /log C:\Downloads\dotnet-fx-install.log"
+            Arguments = "/qn /norestart /log C:\Downloads\nodejs-install.log"
             Path = "C:\Downloads\node-v8.9.4-x64.msi"
             DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetFramework"
         }
