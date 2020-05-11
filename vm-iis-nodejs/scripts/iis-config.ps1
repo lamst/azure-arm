@@ -50,7 +50,7 @@ Configuration ConfigureWebServer
             ProductId = ""
             Arguments = "/qn /norestart /log C:\Downloads\nodejs-install.log"
             Path = "C:\Downloads\node-v8.9.4-x64.msi"
-            DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetFramework"
+            DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadNodeJS"
         }
     }
 }
