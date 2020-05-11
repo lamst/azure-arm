@@ -17,12 +17,6 @@ Configuration ConfigureWebServer
             Name = "Web-Server"
         }
 
-        WindowsFeature InstallManagementTools
-        {
-            Ensure = "Present"
-            Name = "Web-Mgmt-Tools"
-        }
-
         #**********************************************************
         # Download .NET Core Hosting Bundle
         #**********************************************************
@@ -36,41 +30,21 @@ Configuration ConfigureWebServer
         #**********************************************************
         # Install .NET Core Hosting Bundle
         #**********************************************************
-        xRemoteFile DownloadDotNetCoreHostingBundle 
+        xRemoteFile DownloadDotNetFramework 
         {
-            Uri = "https://download.visualstudio.microsoft.com/download/pr/5a059308-c27a-4223-b04d-0e815dce2cd0/10f528c237fed56192ea22283d81c409/dotnet-hosting-2.1.16-win.exe"
-            DestinationPath = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
+            Uri = "http://go.microsoft.com/fwlink/?linkid=780600"
+            DestinationPath = "C:\Downloads\dotnet-fx-4.6.2-x86.exe"
             MatchSource = $false
             DependsOn = "[File]DownloadFolder"
         }
 
-        xPackage InstallDotNetCoreHostingBundle 
+        xPackage InstallDotNetFramework 
         {
-            Name = "Microsoft ASP.NET Core Module"
+            Name = "Microsoft .NET Framework"
             ProductId = ""
-            Arguments = "/quiet /norestart /log C:\Downloads\dotnet-hosting-install.log"
-            Path = "C:\Downloads\dotnet-hosting-2.1.16-win.exe"
-            DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetCoreHostingBundle"
-        }
-
-        #**********************************************************
-        # Install Microsoft Build Tools 2015
-        #**********************************************************
-        xRemoteFile DownloadBuildTools 
-        {
-            Uri = "https://download.microsoft.com/download/E/E/D/EEDF18A8-4AED-4CE0-BEBE-70A83094FC5A/BuildTools_Full.exe"
-            DestinationPath = "C:\Downloads\BuildTools_Full.exe"
-            MatchSource = $false
-            DependsOn = "[File]DownloadFolder"
-        }
-
-        xPackage InstallBuildToolds 
-        {
-            Name = "Microsoft Build Tools 2015"
-            ProductId = ""
-            Arguments = "/quiet /norestart /log C:\Downloads\build-tools-install.log"
-            Path = "C:\Downloads\BuildTools_Full.exe"
-            DependsOn = "[xRemoteFile]DownloadBuildTools"
+            Arguments = "/q /norestart /log C:\Downloads\dotnet-fx-install.log"
+            Path = "C:\Downloads\dotnet-fx-4.6.2-x86.exe"
+            DependsOn = "[WindowsFeature]InstallWebServer", "[xRemoteFile]DownloadDotNetFramework"
         }
     }
 }
