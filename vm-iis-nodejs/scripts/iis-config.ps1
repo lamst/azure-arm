@@ -97,6 +97,46 @@ Configuration ConfigureWebServer
             DependsOn="[File]PM2HomeDirectory"
         }
 
+        
+        #**********************************************************
+        # Download PM2 Windows Service Installer
+        #**********************************************************
+        File DownloadFolder
+        {
+            DestinationPath = "C:\Downloads"
+            Type = "Directory"
+            Ensure = "Present"
+        }
+
+        xScript DownloadPM2Installer
+        {
+            SetScript = 
+            {
+                $Url = "https://github.com/jessety/pm2-installer/archive/master.zip"
+                $Output = "C:\Downloads\pm2-installer.zip"
+                Invoke-WebRequest -Uri $Url -OutFile $Output
+            }
+            GetScript =  
+            {
+                # This block must return a hashtable. The hashtable must only contain one key Result and the value must be of type String.
+                return @{ "Result" = "false" }
+            }
+            TestScript = 
+            {
+                # If it returns $false, the SetScript block will run. If it returns $true, the SetScript block will not run.
+               return $false
+            }
+            DependsOn = "[File]DownloadFolder"
+        }
+
+        Archive ExtractPM2Installer
+        {
+            Destination = "C:\Downloads\pm2-installer"
+            Path = "C:\Downloads\pm2-installer.zip"
+            Force = $true
+            DependsOn = "[xScript]DownloadPM2Installer"
+        }
+
         #**********************************************************
         # Install PM2 Service
         #**********************************************************
@@ -107,7 +147,6 @@ Configuration ConfigureWebServer
                 Write-Verbose -Message "Installing pm2 dependencies..."
                 Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" -ArgumentList "install", "bufferutil", "-g" -Wait
                 Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" -ArgumentList "install", "utf-8-validate", "-g" -Wait
-                Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" -ArgumentList "install", "npm-check-updates", "-g" -Wait
                 Write-Verbose -Message "Finished installing pm2 dependencies..."
                 
                 Write-Verbose -Message "Installing pm2..."
@@ -118,20 +157,20 @@ Configuration ConfigureWebServer
                 Start-Process -FilePath "C:\Program Files\nodejs\npm.cmd" -ArgumentList "install", "pm2-windows-service", "-g" -Wait
                 Write-Verbose -Message "Finished installing pm2-windows-service npm module..."
 
-                Write-Verbose -Message "Adding npm modules to path..."
-                $addPath = $env:APPDATA + "\npm"
-                $regexAddPath = [regex]::Escape($addPath)
-                $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
-                $env:Path = ($arrPath + $addPath) -join ';'
-                Write-Verbose -Message "Finished adding npm modules to path..."
+                # Write-Verbose -Message "Adding npm modules to path..."
+                # $addPath = $env:APPDATA + "\npm"
+                # $regexAddPath = [regex]::Escape($addPath)
+                # $arrPath = $env:Path -split ';' | Where-Object {$_ -notMatch "^$regexAddPath\\?"}
+                # $env:Path = ($arrPath + $addPath) -join ';'
+                # [Environment]::SetEnvironmentVariable("Path", $env:Path, "Machine")
+                # Write-Verbose -Message "Finished adding npm modules to path..."
                 
-                $pm2Home = $using:PM2Home
-                $env:PM2_HOME = $pm2Home
-                [Environment]::SetEnvironmentVariable("PM2_HOME", $env:PM2_HOME, "Machine")
+                # $pm2Home = $using:PM2Home
+                # $env:PM2_HOME = $pm2Home
+                # [Environment]::SetEnvironmentVariable("PM2_HOME", $env:PM2_HOME, "Machine")
 
-                # $exePath = $env:APPDATA + "\npm\pm2-service-install.cmd"
                 # Write-Verbose -Message "Installing pm2 as a service..."
-                # Start-Process -FilePath $exePath -Wait
+                # Start-Process -FilePath cmd.exe -ArgumentList "/c", "$env:APPDATA\npm\pm2-service-install" -Wait
                 # Write-Verbose -Message "Finished installing pm2 as a service..."
             }
             GetScript = 
