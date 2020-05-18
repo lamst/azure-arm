@@ -209,7 +209,18 @@
                 "autoUpgradeMinorVersion": "true",
                 "settings": {
                     "modulesUrl": "[concat(variables('templateBaseUrl'), 'vm-iis-nodejs/scripts/', variables('moduleName'), '.zip')]",
-                    "configurationFunction": "[concat(variables('moduleName'), '.ps1', '\\ConfigureWebServer')]"
+                    "configurationFunction": "[concat(variables('moduleName'), '.ps1', '\\ConfigureWebServer')]",
+                    "properties": {
+                        "ScriptRunAsCreds": {
+                            "UserName": "[parameters('adminUsername')]",
+                            "Password": "PrivateSettingsRef:AdminPassword"
+                        }
+                    }
+                },
+                "protectedSettings": {
+                    "Items": {
+                        "AdminPassword": "[parameters('adminPassword')]"
+                    }
                 }
             }
         }
