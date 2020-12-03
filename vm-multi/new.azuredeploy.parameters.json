@@ -1,0 +1,42 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUsername": {
+            "value": "lamst"
+        },
+        "adminPassword": {
+            "value": "Azure12345678"
+        },
+        "vmPrefix": {
+            "value": "temp-vm"
+        },
+        "vmConfig": {
+            "value": [
+                {
+                    "instanceCount": 1,
+                    "instanceSize": "Standard_D2_v3"
+                },
+                {
+                    "instanceCount": 1,
+                    "instanceSize": "Standard_DS4_v2"
+                }
+            ]
+        },
+        "newOrExistingVnet": {
+            "value": "New"
+        },
+        "newOrExistingVnetName": {
+            "value": "temp-vnet"
+        },
+        "newOrExistingSubnetName": {
+            "value": "temp-snet"
+        },
+        "newOrExistingAvailabilitySet": {
+            "value": "New"
+        },
+        "newOrExistingAvailabilitySetName": {
+            "value": "temp-as"
+        }
+    }
+}
