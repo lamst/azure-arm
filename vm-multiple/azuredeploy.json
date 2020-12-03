@@ -91,12 +91,12 @@
             {
                 "name": "nicNames",
                 "count": "[parameters('vmNumber')]",
-                "input": "[concat('nic-', parameters('vmName'), copyIndex('nicNames', 1), '-', substring(uniqueString(subscription().subscriptionId), 0, 5))]"
+                "input": "[concat('nic-', parameters('vmName'), copyIndex('nicNames', 1), '-', substring(uniqueString(resourceGroup().id), 0, 5))]"
             },
             {
                 "name": "diskNames",
                 "count": "[parameters('vmNumber')]",
-                "input": "[concat('osdisk-', parameters('vmName'), copyIndex('diskNames', 1), '-', substring(uniqueString(subscription().subscriptionId), 0, 5))]"
+                "input": "[concat('osdisk-', parameters('vmName'), copyIndex('diskNames', 1), '-', substring(uniqueString(resourceGroup().id), 0, 5))]"
             },
             {
                 "name": "vmNames",
